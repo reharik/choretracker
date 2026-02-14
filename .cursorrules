@@ -1,0 +1,81 @@
+# Cursor AI Rules for ChoreTracker Project
+
+## TypeScript Guidelines
+
+- NEVER use `any` type without explicit justification
+- NEVER use `as` type assertions without explicit justification
+- ALWAYS prefer proper type definitions over type assertions
+- ALWAYS use `unknown` instead of `any` when type is truly unknown
+- ALWAYS prefer type guards over type assertions when possible
+
+## Function Style Rules
+
+- ALWAYS use arrow functions for all function declarations
+- NEVER use `function` keyword declarations
+- ALWAYS use arrow functions for methods, callbacks, and event handlers
+- ALWAYS use arrow functions for async functions
+
+## Code Quality Rules
+
+- NEVER suppress TypeScript errors with `@ts-ignore` or `@ts-expect-error` without explanation
+- ALWAYS provide proper error handling instead of ignoring errors
+- ALWAYS use explicit return types for public functions
+- ALWAYS validate input parameters before use
+
+## Database & API Rules
+
+- NEVER use `any` for database query results
+- ALWAYS use proper Knex types and interfaces
+- ALWAYS validate request bodies before processing
+- ALWAYS handle database errors gracefully
+
+## Security Rules
+
+- NEVER bypass authentication or authorization checks
+- ALWAYS validate user permissions before data access
+- ALWAYS sanitize user input
+- ALWAYS use parameterized queries for database operations
+
+## Performance Rules
+
+- NEVER use synchronous operations in async contexts
+- ALWAYS use proper error boundaries
+- ALWAYS optimize database queries
+- ALWAYS use proper indexing strategies
+
+## When Exceptions Are Allowed
+
+If you must use `any` or `as`, you MUST:
+
+1. Explain why it's necessary
+2. Provide a comment explaining the risk
+3. Suggest a better alternative if possible
+4. Consider if the code can be refactored to avoid it
+
+## Function Style Examples
+
+```typescript
+// BAD - Don't use function declarations
+function getUser(id: string): Promise<User> {
+  return userRepository.getUser(id);
+}
+
+// GOOD - Use arrow functions
+const getUser = (id: string): Promise<User> => {
+  return userRepository.getUser(id);
+};
+
+// BAD - Don't use function keyword in objects
+const service = {
+  getUser: function (id: string) {
+    return userRepository.getUser(id);
+  },
+};
+
+// GOOD - Use arrow functions in objects
+const service = {
+  getUser: (id: string) => {
+    return userRepository.getUser(id);
+  },
+};
+```

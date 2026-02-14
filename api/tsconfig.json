@@ -1,0 +1,23 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "noEmit": true,
+    "allowJs": true,
+    "types": ["jest"],
+    "plugins": [
+      {
+        "transform": "typia/lib/transform"
+      }
+    ],
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "db/**/*.ts"
+  ],
+  "exclude": ["jest.*", "dist", "node_modules", "src/_original/**"]
+}
