@@ -1,0 +1,52 @@
+# Caddyfile for ChoreTracker Application
+# Supports both domain-based and IP-based access
+
+# Option 1: With Domain (HTTPS enabled automatically)
+# Caddy will automatically obtain SSL certificates from Let's Encrypt
+# Replace choretracker.example.com with your actual domain
+# choretracker.example.com {
+#   # Handle API requests first
+#   handle /api/* {
+#     reverse_proxy api:3000 {
+#       health_uri /health
+#       health_interval 30s
+#     }
+#   }
+#
+#   # Serve frontend static files for everything else
+#   handle {
+#     root * /usr/share/caddy/html
+#     file_server
+#     # SPA routing - serve index.html for all routes
+#     try_files {path} /index.html
+#   }
+# }
+
+# Option 2: Without Domain (HTTP only, for personal use)
+# This uses the EC2 public IP or DNS name
+# Replace YOUR_EC2_IP_OR_DNS with your actual EC2 public IP or DNS name
+# Example: ec2-1-2-3-4.compute-1.amazonaws.com or 1.2.3.4
+:80 {
+  # Handle API requests first
+  handle /api/* {
+    reverse_proxy api:3000 {
+      health_uri /health
+      health_interval 30s
+    }
+  }
+
+  # Serve frontend static files for everything else
+  handle {
+    root * /usr/share/caddy/html
+    file_server
+    # SPA routing - serve index.html for all routes
+    try_files {path} /index.html
+  }
+}
+
+# Health check endpoint (bypass proxy)
+:8080 {
+  respond /health 200 {
+    body "ok"
+  }
+}

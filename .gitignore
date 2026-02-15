@@ -1,5 +1,7 @@
 node_modules
 .env
+.env.local
+.env.production
 .history
 .vscode
 dist
@@ -17,3 +19,13 @@ vitest.config.*.timestamp*
 *.key
 *.p12
 *.pfx
+
+# Deployment artifacts
+*.tar.gz
+backups/
+deploy/
+
+# Docker volumes (if running locally)
+pgdata/
+caddy_data/
+caddy_config/

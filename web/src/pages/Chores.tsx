@@ -209,7 +209,7 @@ const LegendCard = styled(Card)`
 
 export const Chores = () => {
   const choreService = useChoreService();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [summary, setSummary] = useState<ChoreWeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -415,7 +415,7 @@ export const Chores = () => {
         <div>
           <Title>💰 CHORE BANK</Title>
           <Subtitle>
-            {weekKey} ({getWeekLabel()})
+            {weekKey} ({getWeekLabel()}) · {user?.name || user?.email}
           </Subtitle>
         </div>
         <HStack gap={1}>
@@ -435,6 +435,9 @@ export const Chores = () => {
               </Button>
             </>
           )}
+          <Button variant="ghost" size="sm" onClick={logout}>
+            🚪 Logout
+          </Button>
         </HStack>
       </HStack>
 

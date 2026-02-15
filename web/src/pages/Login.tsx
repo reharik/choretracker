@@ -61,6 +61,14 @@ export const Login = () => {
   const [role, setRole] = useState<'adult' | 'kid'>('kid');
   const { login, signup } = useAuth();
 
+  const toggleForm = () => {
+    setShowSignup(!showSignup);
+    setEmail('');
+    setPassword('');
+    setName('');
+    setError('');
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -86,6 +94,7 @@ export const Login = () => {
       return;
     }
 
+    console.log('Signup form values:', { name, email, password: '***', role });
     const success = await signup(email, password, name, role);
 
     if (!success) {
@@ -173,7 +182,7 @@ export const Login = () => {
 
               <SignupLink>
                 Already have an account?{' '}
-                <a href="#" onClick={(e) => { e.preventDefault(); setShowSignup(false); }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>
                   Sign in
                 </a>
               </SignupLink>
@@ -229,7 +238,7 @@ export const Login = () => {
 
             <SignupLink>
               Don't have an account?{' '}
-              <a href="#" onClick={(e) => { e.preventDefault(); setShowSignup(true); }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>
                 Sign up
               </a>
             </SignupLink>

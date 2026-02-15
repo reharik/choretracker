@@ -14,24 +14,24 @@ import { RESOLVER } from 'awilix';
 import type { Container } from '../container';
 
 export interface ChoreRepository {
-  getChores: (userId: string) => Promise<Chore[]>;
+  getChores: () => Promise<Chore[]>;
   createChore: (userId: string, input: CreateChoreInput) => Promise<Chore>;
-  updateChore: (userId: string, choreId: string, input: UpdateChoreInput) => Promise<Chore | undefined>;
-  deleteChore: (userId: string, choreId: string) => Promise<boolean>;
-  getExtras: (userId: string, weekKey: string) => Promise<ChoreExtra[]>;
+  updateChore: (choreId: string, input: UpdateChoreInput) => Promise<Chore | undefined>;
+  deleteChore: (choreId: string) => Promise<boolean>;
+  getExtras: (weekKey: string) => Promise<ChoreExtra[]>;
   createExtra: (userId: string, input: CreateChoreExtraInput) => Promise<ChoreExtra>;
-  deleteExtra: (userId: string, extraId: string) => Promise<boolean>;
-  getChecks: (userId: string, weekKey: string) => Promise<ChoreCheck[]>;
+  deleteExtra: (extraId: string) => Promise<boolean>;
+  getChecks: (weekKey: string) => Promise<ChoreCheck[]>;
   toggleCheck: (userId: string, input: ToggleCheckInput) => Promise<{ checked: boolean; check?: ChoreCheck }>;
-  getWeeklySummary: (userId: string, weekKey: string) => Promise<ChoreWeeklySummary>;
+  getWeeklySummary: (weekKey: string) => Promise<ChoreWeeklySummary>;
   getBonusSettings: (userId: string) => Promise<BonusSettings>;
   updateBonusSettings: (userId: string, input: UpdateBonusSettingsInput) => Promise<BonusSettings>;
 }
 
 export const createChoreRepository = ({ connection, logger }: Container): ChoreRepository => ({
-  getChores: async (userId: string): Promise<Chore[]> => {
+  getChores: async (): Promise<Chore[]> => {
     return connection('chores')
-      .where({ userId, isActive: true })
+      .where({ isActive: true })
       .orderBy('sortOrder', 'asc')
       .orderBy('createdAt', 'asc');
   },
@@ -54,24 +54,24 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
     return chore;
   },
 
-  updateChore: async (userId: string, choreId: string, input: UpdateChoreInput): Promise<Chore | undefined> => {
+  updateChore: async (choreId: string, input: UpdateChoreInput): Promise<Chore | undefined> => {
     const [chore] = await connection('chores')
-      .where({ id: choreId, userId })
+      .where({ id: choreId })
       .update({ ...input, updatedAt: connection.fn.now() })
       .returning('*');
     return chore;
   },
 
-  deleteChore: async (userId: string, choreId: string): Promise<boolean> => {
+  deleteChore: async (choreId: string): Promise<boolean> => {
     const count = await connection('chores')
-      .where({ id: choreId, userId })
+      .where({ id: choreId })
       .delete();
     return count > 0;
   },
 
-  getExtras: async (userId: string, weekKey: string): Promise<ChoreExtra[]> => {
+  getExtras: async (weekKey: string): Promise<ChoreExtra[]> => {
     return connection('chore_extras')
-      .where({ userId, weekKey })
+      .where({ weekKey })
       .orderBy('createdAt', 'asc');
   },
 
@@ -90,16 +90,16 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
     return extra;
   },
 
-  deleteExtra: async (userId: string, extraId: string): Promise<boolean> => {
+  deleteExtra: async (extraId: string): Promise<boolean> => {
     // Also delete any checks for this extra
-    await connection('chore_checks').where({ userId, choreExtraId: extraId }).delete();
-    const count = await connection('chore_extras').where({ id: extraId, userId }).delete();
+    await connection('chore_checks').where({ choreExtraId: extraId }).delete();
+    const count = await connection('chore_extras').where({ id: extraId }).delete();
     return count > 0;
   },
 
-  getChecks: async (userId: string, weekKey: string): Promise<ChoreCheck[]> => {
+  getChecks: async (weekKey: string): Promise<ChoreCheck[]> => {
     return connection('chore_checks')
-      .where({ userId, weekKey })
+      .where({ weekKey })
       .orderBy('checkedAt', 'asc');
   },
 
@@ -143,9 +143,9 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
 
   getWeeklySummary: async (userId: string, weekKey: string): Promise<ChoreWeeklySummary> => {
     const [chores, extras, checks, bonusSettings] = await Promise.all([
-      connection('chores').where({ userId, isActive: true }).orderBy('sortOrder', 'asc'),
-      connection('chore_extras').where({ userId, weekKey }).orderBy('createdAt', 'asc'),
-      connection('chore_checks').where({ userId, weekKey }),
+      connection('chores').where({ isActive: true }).orderBy('sortOrder', 'asc'),
+      connection('chore_extras').where({ weekKey }).orderBy('createdAt', 'asc'),
+      connection('chore_checks').where({ weekKey }),
       connection('bonus_settings').where({ userId }).first(),
     ]);
 

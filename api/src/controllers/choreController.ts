@@ -22,6 +22,7 @@ export const createChoreController = ({
     const userId = ctx.user!.id;
     const weekKey = (ctx.query.weekKey as string) || getCurrentWeekKey();
 
+    // Pass userId only for bonus settings, but data is shared across all users
     const summary = await choreRepository.getWeeklySummary(userId, weekKey);
     ctx.status = 200;
     ctx.body = summary;
@@ -50,10 +51,9 @@ export const createChoreController = ({
   },
 
   updateChore: async (ctx: TypedContext<{ id: string }>): Promise<Context> => {
-    const userId = ctx.user!.id;
     const choreId = ctx.params.id;
 
-    const chore = await choreRepository.updateChore(userId, choreId, ctx.request.body);
+    const chore = await choreRepository.updateChore(choreId, ctx.request.body);
     if (!chore) {
       ctx.status = 404;
       ctx.body = { error: 'Chore not found' };
@@ -65,10 +65,9 @@ export const createChoreController = ({
   },
 
   deleteChore: async (ctx: TypedContext<{ id: string }>): Promise<Context> => {
-    const userId = ctx.user!.id;
     const choreId = ctx.params.id;
 
-    const deleted = await choreRepository.deleteChore(userId, choreId);
+    const deleted = await choreRepository.deleteChore(choreId);
     if (!deleted) {
       ctx.status = 404;
       ctx.body = { error: 'Chore not found' };
@@ -99,10 +98,9 @@ export const createChoreController = ({
   },
 
   deleteExtra: async (ctx: TypedContext<{ id: string }>): Promise<Context> => {
-    const userId = ctx.user!.id;
     const extraId = ctx.params.id;
 
-    const deleted = await choreRepository.deleteExtra(userId, extraId);
+    const deleted = await choreRepository.deleteExtra(extraId);
     if (!deleted) {
       ctx.status = 404;
       ctx.body = { error: 'Extra chore not found' };
