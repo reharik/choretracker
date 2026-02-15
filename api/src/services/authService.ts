@@ -15,15 +15,12 @@ export interface AuthService {
 }
 
 const sanitizeUser = (user: User & { passwordHash?: string }): SanitizedUser => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash, ...sanitized } = user;
   return sanitized as SanitizedUser;
 };
 
-export const createAuthService = ({
-  connection,
-  logger,
-  config,
-}: Container): AuthService => {
+export const createAuthService = ({ connection, logger, config }: Container): AuthService => {
   return {
     login: async (credentials: LoginInput) => {
       const { email, password } = credentials;

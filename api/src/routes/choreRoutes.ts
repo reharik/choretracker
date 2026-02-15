@@ -15,9 +15,7 @@ const typedHandler = <T extends Record<string, string>>(
   return (ctx: Context) => handler(ctx as TypedContext<T>);
 };
 
-export const createChoreRoutes = ({
-  choreController,
-}: Container): ChoreRoutes => ({
+export const createChoreRoutes = ({ choreController }: Container): ChoreRoutes => ({
   mountRoutes: (router: Router) => {
     // Weekly summary (includes chores, extras, checks, and computed totals)
     router.get('/chores/weekly', requireAuth(choreController.getWeeklySummary));

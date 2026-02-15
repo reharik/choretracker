@@ -17,7 +17,7 @@
       }
     },
     "build": {
-      "executor": "@nx/vite:build",
+      "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "dependsOn": [
         "ts-patch:install",
@@ -25,15 +25,15 @@
         "contracts:build"
       ],
       "options": {
-        "outputPath": "{projectRoot}/dist",
-        "configFile": "{projectRoot}/vite.config.mjs"
+        "command": "vite build --config vite.config.mjs",
+        "cwd": "{projectRoot}"
       },
       "configurations": {
         "development": {
-          "sourcemap": true
+          "command": "vite build --config vite.config.mjs --mode development"
         },
         "production": {
-          "minify": true
+          "command": "vite build --config vite.config.mjs --mode production"
         }
       }
     },
@@ -56,12 +56,12 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js",
+        "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js --passWithNoTests",
         "cwd": "{projectRoot}"
       },
       "configurations": {
         "runInBand": {
-          "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js --runInBand"
+          "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js --runInBand --passWithNoTests"
         }
       }
     },

@@ -8,8 +8,10 @@ export interface Routes {
 
 export const createRoutes = ({ authRoutes, choreRoutes }: Container): Routes => ({
   mountRoutes: (router: Router) => {
+    // Auth routes are a Router instance, use them directly
     router.use(authRoutes.routes());
     router.use(authRoutes.allowedMethods());
+    // Chore routes have a mountRoutes method
     choreRoutes.mountRoutes(router);
   },
 });

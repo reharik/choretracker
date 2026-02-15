@@ -4,7 +4,7 @@
     "outDir": "./dist",
     "noEmit": true,
     "allowJs": true,
-    "types": ["jest"],
+    "types": ["jest", "vite/client"],
     "plugins": [
       {
         "transform": "typia/lib/transform"

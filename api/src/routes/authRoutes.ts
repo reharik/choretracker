@@ -1,5 +1,5 @@
-import { RESOLVER } from 'awilix';
 import Router from '@koa/router';
+import { RESOLVER } from 'awilix';
 import type { Container } from '../container';
 import { requireAuth } from '../middleware/routeGuards';
 

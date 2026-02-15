@@ -10,6 +10,7 @@ export interface AuthController {
 }
 
 const sanitizeUser = (user: { passwordHash?: string; [key: string]: unknown }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash, ...sanitized } = user;
   return sanitized;
 };

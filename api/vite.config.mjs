@@ -29,6 +29,9 @@ export default defineConfig(({ mode }) => {
           manualChunks: undefined,
         },
         external: (id) => {
+          // Handle undefined or null id
+          if (!id) return false;
+          
           // Node.js built-ins
           if (
             [

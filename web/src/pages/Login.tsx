@@ -39,12 +39,12 @@ const SignupLink = styled.p`
   text-align: center;
   margin-top: ${({ theme }) => theme.spacing(2)};
   color: ${({ theme }) => theme.colors.subtext};
-  
+
   a {
     color: ${({ theme }) => theme.colors.accent};
     text-decoration: none;
     font-weight: 500;
-    
+
     &:hover {
       text-decoration: underline;
     }
@@ -154,7 +154,10 @@ export const Login = () => {
                   />
 
                   <div>
-                    <label htmlFor="role" style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                    <label
+                      htmlFor="role"
+                      style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}
+                    >
                       Account Type
                     </label>
                     <select
@@ -182,7 +185,13 @@ export const Login = () => {
 
               <SignupLink>
                 Already have an account?{' '}
-                <a href="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleForm();
+                  }}
+                >
                   Sign in
                 </a>
               </SignupLink>
@@ -224,9 +233,7 @@ export const Login = () => {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setPassword(e.target.value)
-                  }
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                 />
 
@@ -238,7 +245,13 @@ export const Login = () => {
 
             <SignupLink>
               Don't have an account?{' '}
-              <a href="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleForm();
+                }}
+              >
                 Sign up
               </a>
             </SignupLink>

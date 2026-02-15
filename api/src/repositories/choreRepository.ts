@@ -22,8 +22,11 @@ export interface ChoreRepository {
   createExtra: (userId: string, input: CreateChoreExtraInput) => Promise<ChoreExtra>;
   deleteExtra: (extraId: string) => Promise<boolean>;
   getChecks: (weekKey: string) => Promise<ChoreCheck[]>;
-  toggleCheck: (userId: string, input: ToggleCheckInput) => Promise<{ checked: boolean; check?: ChoreCheck }>;
-  getWeeklySummary: (weekKey: string) => Promise<ChoreWeeklySummary>;
+  toggleCheck: (
+    userId: string,
+    input: ToggleCheckInput,
+  ) => Promise<{ checked: boolean; check?: ChoreCheck }>;
+  getWeeklySummary: (weekKey: string, userId?: string) => Promise<ChoreWeeklySummary>;
   getBonusSettings: (userId: string) => Promise<BonusSettings>;
   updateBonusSettings: (userId: string, input: UpdateBonusSettingsInput) => Promise<BonusSettings>;
 }
@@ -63,16 +66,12 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
   },
 
   deleteChore: async (choreId: string): Promise<boolean> => {
-    const count = await connection('chores')
-      .where({ id: choreId })
-      .delete();
+    const count = await connection('chores').where({ id: choreId }).delete();
     return count > 0;
   },
 
   getExtras: async (weekKey: string): Promise<ChoreExtra[]> => {
-    return connection('chore_extras')
-      .where({ weekKey })
-      .orderBy('createdAt', 'asc');
+    return connection('chore_extras').where({ weekKey }).orderBy('createdAt', 'asc');
   },
 
   createExtra: async (userId: string, input: CreateChoreExtraInput): Promise<ChoreExtra> => {
@@ -86,7 +85,12 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
         createdAt: connection.fn.now(),
       })
       .returning('*');
-    logger.info('Extra chore created', { userId, extraId: extra.id, name: input.name, weekKey: input.weekKey });
+    logger.info('Extra chore created', {
+      userId,
+      extraId: extra.id,
+      name: input.name,
+      weekKey: input.weekKey,
+    });
     return extra;
   },
 
@@ -98,9 +102,7 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
   },
 
   getChecks: async (weekKey: string): Promise<ChoreCheck[]> => {
-    return connection('chore_checks')
-      .where({ weekKey })
-      .orderBy('checkedAt', 'asc');
+    return connection('chore_checks').where({ weekKey }).orderBy('checkedAt', 'asc');
   },
 
   toggleCheck: async (
@@ -141,55 +143,74 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
     return { checked: true, check };
   },
 
-  getWeeklySummary: async (userId: string, weekKey: string): Promise<ChoreWeeklySummary> => {
-    const [chores, extras, checks, bonusSettings] = await Promise.all([
+  getWeeklySummary: async (weekKey: string, userId?: string): Promise<ChoreWeeklySummary> => {
+    const [chores, extras, checks] = await Promise.all([
       connection('chores').where({ isActive: true }).orderBy('sortOrder', 'asc'),
       connection('chore_extras').where({ weekKey }).orderBy('createdAt', 'asc'),
       connection('chore_checks').where({ weekKey }),
-      connection('bonus_settings').where({ userId }).first(),
     ]);
 
-    // Create default settings if none exist
-    let settings = bonusSettings;
-    if (!settings) {
-      [settings] = await connection('bonus_settings')
-        .insert({
-          id: connection.raw('gen_random_uuid()'),
-          userId,
-          overCompletionBonusPercent: 50,
-          allChoresCompleteBonusPercent: 25,
-        })
-        .returning('*');
+    // Get bonus settings for the user if userId is provided, otherwise use defaults
+    let settings;
+    if (userId) {
+      settings = await connection('bonus_settings').where({ userId }).first();
+      if (!settings) {
+        [settings] = await connection('bonus_settings')
+          .insert({
+            id: connection.raw('gen_random_uuid()'),
+            userId,
+            overCompletionBonusPercent: 50,
+            allChoresCompleteBonusPercent: 25,
+          })
+          .returning('*');
+      }
+    } else {
+      // Default settings if no user
+      settings = {
+        overCompletionBonusPercent: 50,
+        allChoresCompleteBonusPercent: 25,
+      };
     }
 
     const overCompletionRate = settings.overCompletionBonusPercent / 100;
     const allChoresCompleteRate = settings.allChoresCompleteBonusPercent / 100;
 
     const choreCompletions = chores.map((chore: Chore) => {
-      const completions = checks.filter(
-        (c: ChoreCheck) => c.choreId === chore.id,
-      ).length;
+      const completions = checks.filter((c: ChoreCheck) => c.choreId === chore.id).length;
       const base = Math.min(completions, chore.timesPerWeek) * Number(chore.baseValue);
       // Extra completions earn 100% + bonus% (e.g., if bonus is 25%, extra earns 125% of base value)
-      const extra = Math.max(0, completions - chore.timesPerWeek) * (Number(chore.baseValue) * (1 + overCompletionRate));
+      const extra =
+        Math.max(0, completions - chore.timesPerWeek) *
+        (Number(chore.baseValue) * (1 + overCompletionRate));
       return { ...chore, completions, earned: base + extra };
     });
 
     const extraCompletions = extras.map((ex: ChoreExtra) => {
-      const completions = checks.filter(
-        (c: ChoreCheck) => c.choreExtraId === ex.id,
-      ).length;
+      const completions = checks.filter((c: ChoreCheck) => c.choreExtraId === ex.id).length;
       return { ...ex, completions, earned: completions * Number(ex.value) };
     });
 
-    const baseEarned = choreCompletions.reduce((s: number, c: { earned: number }) => s + c.earned, 0);
-    const extrasEarned = extraCompletions.reduce((s: number, e: { earned: number }) => s + e.earned, 0);
-    const totalPossible = chores.reduce((s: number, c: Chore) => s + Number(c.baseValue) * c.timesPerWeek, 0);
+    const baseEarned = choreCompletions.reduce(
+      (s: number, c: { earned: number }) => s + c.earned,
+      0,
+    );
+    const extrasEarned = extraCompletions.reduce(
+      (s: number, e: { earned: number }) => s + e.earned,
+      0,
+    );
+    const totalPossible = chores.reduce(
+      (s: number, c: Chore) => s + Number(c.baseValue) * c.timesPerWeek,
+      0,
+    );
 
-    const completionRate = totalPossible > 0
-      ? choreCompletions.reduce((s: number, c: { completions: number; timesPerWeek: number }) =>
-          s + Math.min(c.completions / c.timesPerWeek, 1), 0) / chores.length
-      : 0;
+    const completionRate =
+      totalPossible > 0
+        ? choreCompletions.reduce(
+            (s: number, c: { completions: number; timesPerWeek: number }) =>
+              s + Math.min(c.completions / c.timesPerWeek, 1),
+            0,
+          ) / chores.length
+        : 0;
 
     const bonusActive = completionRate >= 1.0;
     const bonusAmount = bonusActive ? baseEarned * allChoresCompleteRate : 0;
@@ -211,7 +232,7 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
 
   getBonusSettings: async (userId: string): Promise<BonusSettings> => {
     let settings = await connection('bonus_settings').where({ userId }).first();
-    
+
     if (!settings) {
       [settings] = await connection('bonus_settings')
         .insert({
@@ -222,14 +243,17 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
         })
         .returning('*');
     }
-    
+
     return settings;
   },
 
-  updateBonusSettings: async (userId: string, input: UpdateBonusSettingsInput): Promise<BonusSettings> => {
+  updateBonusSettings: async (
+    userId: string,
+    input: UpdateBonusSettingsInput,
+  ): Promise<BonusSettings> => {
     // First ensure settings exist
     let settings = await connection('bonus_settings').where({ userId }).first();
-    
+
     if (!settings) {
       [settings] = await connection('bonus_settings')
         .insert({
@@ -245,7 +269,7 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
     const updateData: Record<string, unknown> = {
       updatedAt: connection.fn.now(),
     };
-    
+
     if (input.overCompletionBonusPercent !== undefined) {
       updateData.overCompletionBonusPercent = input.overCompletionBonusPercent;
     }
@@ -257,7 +281,7 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
       .where({ userId })
       .update(updateData)
       .returning('*');
-    
+
     return updated;
   },
 });

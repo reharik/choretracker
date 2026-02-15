@@ -15,16 +15,12 @@ import { useApiFetch } from './apiFetch/useApiFetch';
 export const useChoreService = () => {
   const { apiFetch } = useApiFetch();
 
-  const getWeeklySummary = async (
-    weekKey?: string,
-  ): Promise<ApiResult<ChoreWeeklySummary>> => {
+  const getWeeklySummary = async (weekKey?: string): Promise<ApiResult<ChoreWeeklySummary>> => {
     const qs = weekKey ? `?weekKey=${encodeURIComponent(weekKey)}` : '';
     return apiFetch<ChoreWeeklySummary>(`/chores/weekly${qs}`, { method: 'GET' });
   };
 
-  const createChore = async (
-    input: CreateChoreInput,
-  ): Promise<ApiResult<Chore>> => {
+  const createChore = async (input: CreateChoreInput): Promise<ApiResult<Chore>> => {
     return apiFetch<Chore>('/chores', {
       method: 'POST',
       body: input,
@@ -47,9 +43,7 @@ export const useChoreService = () => {
     });
   };
 
-  const createExtra = async (
-    input: CreateChoreExtraInput,
-  ): Promise<ApiResult<ChoreExtra>> => {
+  const createExtra = async (input: CreateChoreExtraInput): Promise<ApiResult<ChoreExtra>> => {
     return apiFetch<ChoreExtra>('/chores/extras', {
       method: 'POST',
       body: input,
@@ -62,9 +56,7 @@ export const useChoreService = () => {
     });
   };
 
-  const toggleCheck = async (
-    input: ToggleCheckInput,
-  ): Promise<ApiResult<{ checked: boolean }>> => {
+  const toggleCheck = async (input: ToggleCheckInput): Promise<ApiResult<{ checked: boolean }>> => {
     return apiFetch<{ checked: boolean }>('/chores/checks/toggle', {
       method: 'POST',
       body: input,

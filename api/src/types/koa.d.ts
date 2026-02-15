@@ -1,5 +1,6 @@
-import 'koa';
 import type { Knex } from 'knex';
+import 'koa';
+import type { Context } from 'koa';
 
 declare module 'koa' {
   interface DefaultContext {
@@ -12,6 +13,6 @@ declare module 'koa' {
   }
 }
 
-export type TypedContext<T extends Record<string, string>> = Context & {
+export type TypedContext<T extends Record<string, string>> = Omit<Context, 'params'> & {
   params: T;
 };

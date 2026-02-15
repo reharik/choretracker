@@ -1,15 +1,10 @@
+import type { Chore, ChoreCheck, ChoreExtra, ChoreWeeklySummary } from '@chore-tracker/contracts';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import type {
-  Chore,
-  ChoreCheck,
-  ChoreExtra,
-  ChoreWeeklySummary,
-} from '@chore-tracker/contracts';
-import { useChoreService } from '../hooks/useChoreService';
-import { Button, Card, HStack, VStack } from '../ui/Primitives';
-import { FormInput } from '../ui/FormInput';
 import { useAuth } from '../contexts/AuthContext';
+import { useChoreService } from '../hooks/useChoreService';
+import { FormInput } from '../ui/FormInput';
+import { Button, Card, HStack, VStack } from '../ui/Primitives';
 
 // Extended types from weekly summary
 type ChoreWithStats = Chore & { completions: number; earned: number };
@@ -18,12 +13,22 @@ type ExtraWithStats = ChoreExtra & { completions: number; earned: number };
 // ── Helpers ──
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-const FULL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
+const FULL_DAYS = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const;
 
 function getCurrentWeekKey(): string {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const weekNum = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+  const weekNum = Math.ceil(
+    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7,
+  );
   return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
@@ -128,9 +133,7 @@ const CheckButton = styled.button<{ $checked: boolean; $isExtra?: boolean }>`
   justify-content: center;
   transition: all 0.15s ease;
   box-shadow: ${({ $checked, $isExtra, theme }) =>
-    $checked
-      ? `0 2px 8px ${$isExtra ? 'rgba(249,115,22,0.3)' : `${theme.colors.ok}44`}`
-      : 'none'};
+    $checked ? `0 2px 8px ${$isExtra ? 'rgba(249,115,22,0.3)' : `${theme.colors.ok}44`}` : 'none'};
 
   &:hover {
     border-color: ${({ $checked, $isExtra, theme }) =>
@@ -216,7 +219,10 @@ export const Chores = () => {
   const [showPayday, setShowPayday] = useState(false);
   const [newChore, setNewChore] = useState({ name: '', baseValue: '', timesPerWeek: '' });
   const [newExtra, setNewExtra] = useState({ name: '', value: '' });
-  const [bonusSettings, setBonusSettings] = useState({ overCompletionBonusPercent: 50, allChoresCompleteBonusPercent: 25 });
+  const [bonusSettings, setBonusSettings] = useState({
+    overCompletionBonusPercent: 50,
+    allChoresCompleteBonusPercent: 25,
+  });
 
   const weekKey = getCurrentWeekKey();
   const isAdult = user?.role === 'adult';
@@ -306,7 +312,9 @@ export const Chores = () => {
             ${checked ? '✓' : '&nbsp;'}
           </div></td>`;
         }).join('');
-        const earnedValue = showCurrent ? `$${c.earned.toFixed(2)}` : `$<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>`;
+        const earnedValue = showCurrent
+          ? `$${c.earned.toFixed(2)}`
+          : `$<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>`;
         return `<tr style="border-bottom:1px solid #e5e7eb;">
         <td style="padding:10px 12px;font-weight:600;font-size:14px;">${c.name}</td>
         <td style="padding:8px;text-align:center;font-size:13px;">$${Number(c.baseValue).toFixed(2)}</td>
@@ -320,19 +328,23 @@ export const Chores = () => {
       .join('');
 
     // Only show extra chores section if there are any extras defined
-    const extraRows = summary.extras.length > 0 ? summary.extras
-      .map((ex: ExtraWithStats) => {
-        const boxes = DAYS.map((_, di) => {
-          const checked = showCurrent ? isChecked(undefined, ex.id, di) : false;
-          return `<td style="text-align:center;padding:5px;">
+    const extraRows =
+      summary.extras.length > 0
+        ? summary.extras
+            .map((ex: ExtraWithStats) => {
+              const boxes = DAYS.map((_, di) => {
+                const checked = showCurrent ? isChecked(undefined, ex.id, di) : false;
+                return `<td style="text-align:center;padding:5px;">
           <div style="width:30px;height:30px;border:2px solid ${checked ? '#ea580c' : '#bbb'};
             border-radius:4px;margin:auto;display:flex;align-items:center;justify-content:center;
             background:${checked ? '#fff7ed' : '#fff'};color:#ea580c;font-weight:bold;font-size:16px;">
             ${checked ? '✓' : '&nbsp;'}
           </div></td>`;
-        }).join('');
-        const earnedValue = showCurrent ? `$${ex.earned.toFixed(2)}` : `$<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>`;
-        return `<tr style="border-bottom:1px solid #e5e7eb;background:#fffbf5;">
+              }).join('');
+              const earnedValue = showCurrent
+                ? `$${ex.earned.toFixed(2)}`
+                : `$<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>`;
+              return `<tr style="border-bottom:1px solid #e5e7eb;background:#fffbf5;">
         <td style="padding:10px 12px;font-weight:600;font-size:14px;color:#c2410c;">⭐ ${ex.name}</td>
         <td style="padding:8px;text-align:center;font-size:13px;">$${Number(ex.value).toFixed(2)}</td>
         <td style="padding:8px;text-align:center;font-size:13px;color:#999;">—</td>
@@ -341,8 +353,9 @@ export const Chores = () => {
           ${earnedValue}
         </td>
       </tr>`;
-      })
-      .join('') : '';
+            })
+            .join('')
+        : '';
 
     const blankExtras = '';
 
@@ -401,7 +414,9 @@ export const Chores = () => {
   if (!summary) {
     return (
       <PageWrapper>
-        <p style={{ color: '#ff6b6b', textAlign: 'center', padding: '40px 0' }}>Failed to load chore data.</p>
+        <p style={{ color: '#ff6b6b', textAlign: 'center', padding: '40px 0' }}>
+          Failed to load chore data.
+        </p>
       </PageWrapper>
     );
   }
@@ -484,7 +499,9 @@ export const Chores = () => {
                   <PaydayRow key={ex.id}>
                     <span style={{ color: '#f97316' }}>
                       ⭐ {ex.name}{' '}
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({ex.completions}x)</span>
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                        ({ex.completions}x)
+                      </span>
                     </span>
                     <Earned $hasValue={ex.earned > 0} $isExtra>
                       ${ex.earned.toFixed(2)}
@@ -493,21 +510,45 @@ export const Chores = () => {
                 ))}
               </>
             )}
-            <div style={{ borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: 10, marginTop: 4 }}>
-              <HStack style={{ justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}>
+            <div
+              style={{ borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: 10, marginTop: 4 }}
+            >
+              <HStack
+                style={{ justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}
+              >
                 <span>Base chores</span>
-                <span style={{ fontFamily: 'var(--font-mono)' }}>${summary.baseEarned.toFixed(2)}</span>
+                <span style={{ fontFamily: 'var(--font-mono)' }}>
+                  ${summary.baseEarned.toFixed(2)}
+                </span>
               </HStack>
               {summary.bonusActive && (
-                <HStack style={{ justifyContent: 'space-between', fontSize: '0.85rem', color: '#facc15', marginTop: 3 }}>
+                <HStack
+                  style={{
+                    justifyContent: 'space-between',
+                    fontSize: '0.85rem',
+                    color: '#facc15',
+                    marginTop: 3,
+                  }}
+                >
                   <span>🌟 100% Bonus (+25%)</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>+${summary.bonusAmount.toFixed(2)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>
+                    +${summary.bonusAmount.toFixed(2)}
+                  </span>
                 </HStack>
               )}
               {summary.extrasEarned > 0 && (
-                <HStack style={{ justifyContent: 'space-between', fontSize: '0.85rem', color: '#f97316', marginTop: 3 }}>
+                <HStack
+                  style={{
+                    justifyContent: 'space-between',
+                    fontSize: '0.85rem',
+                    color: '#f97316',
+                    marginTop: 3,
+                  }}
+                >
                   <span>Extra chores</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>+${summary.extrasEarned.toFixed(2)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>
+                    +${summary.extrasEarned.toFixed(2)}
+                  </span>
                 </HStack>
               )}
               <TotalLine>
@@ -536,7 +577,14 @@ export const Chores = () => {
         <ProgressBarOuter>
           <ProgressBarInner $pct={pct} />
         </ProgressBarOuter>
-        <HStack style={{ justifyContent: 'space-between', marginTop: 6, fontSize: '0.7rem', color: '#a8b3c7' }}>
+        <HStack
+          style={{
+            justifyContent: 'space-between',
+            marginTop: 6,
+            fontSize: '0.7rem',
+            color: '#a8b3c7',
+          }}
+        >
           <span>
             Earned: <Earned $hasValue>{summary.grandTotal.toFixed(2)}</Earned>
           </span>
@@ -566,7 +614,9 @@ export const Chores = () => {
                 label=""
                 placeholder="Chore name"
                 value={newChore.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChore({ ...newChore, name: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewChore({ ...newChore, name: e.target.value })
+                }
                 style={{ flex: '1 1 130px', minWidth: 110 }}
               />
               <FormInput
@@ -576,7 +626,9 @@ export const Chores = () => {
                 step="0.25"
                 min="0"
                 value={newChore.baseValue}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChore({ ...newChore, baseValue: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewChore({ ...newChore, baseValue: e.target.value })
+                }
                 style={{ width: 80 }}
               />
               <FormInput
@@ -586,7 +638,9 @@ export const Chores = () => {
                 min="1"
                 max="7"
                 value={newChore.timesPerWeek}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChore({ ...newChore, timesPerWeek: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewChore({ ...newChore, timesPerWeek: e.target.value })
+                }
                 style={{ width: 65 }}
               />
               <Button size="sm" onClick={handleAddChore}>
@@ -594,7 +648,9 @@ export const Chores = () => {
               </Button>
             </HStack>
 
-            <h3 style={{ fontSize: '0.9rem', color: '#f97316', margin: '8px 0 0' }}>⭐ Extra Chores (this week)</h3>
+            <h3 style={{ fontSize: '0.9rem', color: '#f97316', margin: '8px 0 0' }}>
+              ⭐ Extra Chores (this week)
+            </h3>
             {summary.extras.map((ex: ExtraWithStats) => (
               <HStack key={ex.id} style={{ justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.85rem', color: '#f97316' }}>
@@ -613,7 +669,9 @@ export const Chores = () => {
                 label=""
                 placeholder="Extra chore name"
                 value={newExtra.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewExtra({ ...newExtra, name: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewExtra({ ...newExtra, name: e.target.value })
+                }
                 style={{ flex: '1 1 150px', minWidth: 120 }}
               />
               <FormInput
@@ -623,7 +681,9 @@ export const Chores = () => {
                 step="0.50"
                 min="0"
                 value={newExtra.value}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewExtra({ ...newExtra, value: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewExtra({ ...newExtra, value: e.target.value })
+                }
                 style={{ width: 80 }}
               />
               <Button size="sm" onClick={handleAddExtra}>
@@ -631,12 +691,27 @@ export const Chores = () => {
               </Button>
             </HStack>
 
-            <h3 style={{ fontSize: '0.9rem', color: '#7c9cff', margin: '16px 0 0', borderTop: '1px solid #2a2f3a', paddingTop: 16 }}>
+            <h3
+              style={{
+                fontSize: '0.9rem',
+                color: '#7c9cff',
+                margin: '16px 0 0',
+                borderTop: '1px solid #2a2f3a',
+                paddingTop: 16,
+              }}
+            >
               Bonus Settings
             </h3>
             <VStack gap={2}>
               <div>
-                <label style={{ fontSize: '0.85rem', color: '#a8b3c7', display: 'block', marginBottom: 4 }}>
+                <label
+                  style={{
+                    fontSize: '0.85rem',
+                    color: '#a8b3c7',
+                    display: 'block',
+                    marginBottom: 4,
+                  }}
+                >
                   Over-completion bonus (%)
                 </label>
                 <HStack gap={1}>
@@ -646,17 +721,28 @@ export const Chores = () => {
                     max="100"
                     value={bonusSettings.overCompletionBonusPercent}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setBonusSettings({ ...bonusSettings, overCompletionBonusPercent: Number(e.target.value) })
+                      setBonusSettings({
+                        ...bonusSettings,
+                        overCompletionBonusPercent: Number(e.target.value),
+                      })
                     }
                     style={{ width: 80 }}
                   />
                   <span style={{ fontSize: '0.8rem', color: '#a8b3c7' }}>
-                    % bonus on top of 100% for each completion beyond required (e.g., 25% = 125% total)
+                    % bonus on top of 100% for each completion beyond required (e.g., 25% = 125%
+                    total)
                   </span>
                 </HStack>
               </div>
               <div>
-                <label style={{ fontSize: '0.85rem', color: '#a8b3c7', display: 'block', marginBottom: 4 }}>
+                <label
+                  style={{
+                    fontSize: '0.85rem',
+                    color: '#a8b3c7',
+                    display: 'block',
+                    marginBottom: 4,
+                  }}
+                >
                   All chores complete bonus (%)
                 </label>
                 <HStack gap={1}>
@@ -666,7 +752,10 @@ export const Chores = () => {
                     max="100"
                     value={bonusSettings.allChoresCompleteBonusPercent}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setBonusSettings({ ...bonusSettings, allChoresCompleteBonusPercent: Number(e.target.value) })
+                      setBonusSettings({
+                        ...bonusSettings,
+                        allChoresCompleteBonusPercent: Number(e.target.value),
+                      })
                     }
                     style={{ width: 80 }}
                   />
@@ -770,15 +859,17 @@ export const Chores = () => {
         <strong style={{ color: '#e7ebf3' }}>How it works:</strong>
         <br />
         ✓ Each chore earns its $ value when done the required # of times per week.
-        <br />
-        ✓ Extra completions beyond the requirement earn 100% + {bonusSettings.overCompletionBonusPercent}% bonus (total {100 + bonusSettings.overCompletionBonusPercent}%).
+        <br />✓ Extra completions beyond the requirement earn 100% +{' '}
+        {bonusSettings.overCompletionBonusPercent}% bonus (total{' '}
+        {100 + bonusSettings.overCompletionBonusPercent}%).
         <br />
         🌟 Complete ALL base chores 100%?{' '}
-        <span style={{ color: '#facc15' }}>{bonusSettings.allChoresCompleteBonusPercent}% bonus on everything!</span>
-        <br />
-        ⭐ <span style={{ color: '#f97316' }}>Extra chores</span> are elective one-offs — add them in Edit mode.
-        <br />
-        ❌ Skip a chore entirely? $0 for that one.
+        <span style={{ color: '#facc15' }}>
+          {bonusSettings.allChoresCompleteBonusPercent}% bonus on everything!
+        </span>
+        <br />⭐ <span style={{ color: '#f97316' }}>Extra chores</span> are elective one-offs — add
+        them in Edit mode.
+        <br />❌ Skip a chore entirely? $0 for that one.
       </LegendCard>
     </PageWrapper>
   );

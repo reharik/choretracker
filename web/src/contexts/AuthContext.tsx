@@ -6,7 +6,12 @@ interface AuthContextType {
   user: User | undefined;
   token: string | undefined;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string, role?: 'adult' | 'kid') => Promise<boolean>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    role?: 'adult' | 'kid',
+  ) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;

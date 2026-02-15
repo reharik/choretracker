@@ -36,7 +36,7 @@ export const createAuthMiddleware = ({ authService, logger }: Container) => {
     // Add user directly on context for easy access
     ctx.user = user;
     ctx.isLoggedIn = true;
-    
+
     await next();
   };
 };

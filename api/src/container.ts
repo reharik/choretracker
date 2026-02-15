@@ -7,12 +7,13 @@ import type { LoggerInterface } from './logger';
 // Import types for registered services
 import type Router from '@koa/router';
 import type { Middleware } from 'koa';
+import type { Config } from './config';
 import type { AuthController } from './controllers/authController';
 import type { ChoreController } from './controllers/choreController';
 import type { ChoreRepository } from './repositories/choreRepository';
-import type { AuthService } from './services/authService';
+import type { ChoreRoutes } from './routes/choreRoutes';
 import type { Routes } from './routes/createRoutes';
-import type { Config } from './config';
+import type { AuthService } from './services/authService';
 
 // Base container for manually registered services
 interface BaseContainer {
@@ -28,7 +29,7 @@ export interface Container extends BaseContainer {
   authRoutes: Router;
   choreRepository: ChoreRepository;
   choreController: ChoreController;
-  choreRoutes: Router;
+  choreRoutes: ChoreRoutes;
   routes: Routes;
   optionalAuthMiddleware: Middleware;
   authMiddleware: Middleware;

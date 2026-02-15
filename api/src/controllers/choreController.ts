@@ -15,15 +15,13 @@ export interface ChoreController {
   updateBonusSettings: (ctx: Context) => Promise<Context>;
 }
 
-export const createChoreController = ({
-  choreRepository,
-}: Container): ChoreController => ({
+export const createChoreController = ({ choreRepository }: Container): ChoreController => ({
   getWeeklySummary: async (ctx: Context): Promise<Context> => {
     const userId = ctx.user!.id;
     const weekKey = (ctx.query.weekKey as string) || getCurrentWeekKey();
 
-    // Pass userId only for bonus settings, but data is shared across all users
-    const summary = await choreRepository.getWeeklySummary(userId, weekKey);
+    // Pass userId only for bonus settings, but chore data is shared across all users
+    const summary = await choreRepository.getWeeklySummary(weekKey, userId);
     ctx.status = 200;
     ctx.body = summary;
     return ctx;
@@ -143,13 +141,19 @@ export const createChoreController = ({
     const userId = ctx.user!.id;
     const { overCompletionBonusPercent, allChoresCompleteBonusPercent } = ctx.request.body;
 
-    if (overCompletionBonusPercent != null && (overCompletionBonusPercent < 0 || overCompletionBonusPercent > 100)) {
+    if (
+      overCompletionBonusPercent != null &&
+      (overCompletionBonusPercent < 0 || overCompletionBonusPercent > 100)
+    ) {
       ctx.status = 400;
       ctx.body = { error: 'overCompletionBonusPercent must be between 0 and 100' };
       return ctx;
     }
 
-    if (allChoresCompleteBonusPercent != null && (allChoresCompleteBonusPercent < 0 || allChoresCompleteBonusPercent > 100)) {
+    if (
+      allChoresCompleteBonusPercent != null &&
+      (allChoresCompleteBonusPercent < 0 || allChoresCompleteBonusPercent > 100)
+    ) {
       ctx.status = 400;
       ctx.body = { error: 'allChoresCompleteBonusPercent must be between 0 and 100' };
       return ctx;
@@ -168,7 +172,9 @@ export const createChoreController = ({
 function getCurrentWeekKey(): string {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const weekNum = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+  const weekNum = Math.ceil(
+    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7,
+  );
   return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
