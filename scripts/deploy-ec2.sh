@@ -20,16 +20,18 @@ if [ ! -f /opt/chore-tracker/docker-compose.prod.yml ]; then
   exit 1
 fi
 
+: "${APP_NAME:=chore-tracker}"
+
 echo "Loading Docker image"
 gunzip -c /opt/chore-tracker/deploy/chore-tracker-api.tar.gz | docker load
 
 echo "Starting services via docker compose"
-docker compose --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml up -d
+docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml up -d
 
 echo "Running database migrations"
-docker compose --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml exec -T api sh -c "cd /app && npx knex --knexfile api/dist/knexfile.js migrate:latest"
+docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml exec -T api sh -c "cd /app && npx knex --knexfile api/dist/knexfile.js migrate:latest"
 
 echo "Running containers:"
-docker compose --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml ps
+docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml ps
 
 echo "Deploy complete"

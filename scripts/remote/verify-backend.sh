@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+: "${APP_NAME:=chore-tracker}"
+
 sleep 5
 
 if curl -fsS http://localhost/health >/dev/null; then
@@ -9,6 +11,6 @@ if curl -fsS http://localhost/health >/dev/null; then
 fi
 
 echo "Health check failed."
-docker compose -f /opt/chore-tracker/docker-compose.prod.yml ps || true
-docker compose -f /opt/chore-tracker/docker-compose.prod.yml logs --tail=200 || true
+docker compose -p "${APP_NAME}" -f /opt/chore-tracker/docker-compose.prod.yml ps || true
+docker compose -p "${APP_NAME}" -f /opt/chore-tracker/docker-compose.prod.yml logs --tail=200 || true
 exit 1

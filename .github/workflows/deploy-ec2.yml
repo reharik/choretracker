@@ -25,6 +25,8 @@ env:
   AWS_REGION: us-east-1
   # Update this with your S3 bucket name
   S3_BUCKET: network-deploy-709865789463-us-east-1
+  APP_NAME: chore-tracker
+
 
   # Tag targeting defaults (used by scripts/ssm-run.sh)
   SSM_TAG_HOST: prod-shared
@@ -82,10 +84,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/chore-tracker-api-${{ github.sha }}.tar.gz"
-          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/chore-tracker-api-latest.tar.gz"
-          aws s3 cp docker-compose.prod.yml     "s3://${S3_BUCKET}/deployments/docker-compose.prod.yml"
-          aws s3 cp scripts/deploy-ec2.sh       "s3://${S3_BUCKET}/deployments/deploy-ec2.sh"
+          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/chore-tracker-api-${{ github.sha }}.tar.gz"
+          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/chore-tracker-api-latest.tar.gz"
+          aws s3 cp docker-compose.prod.yml     "s3://${S3_BUCKET}/deployments/${APP_NAME}/docker-compose.prod.yml"
+          aws s3 cp scripts/deploy-ec2.sh       "s3://${S3_BUCKET}/deployments/${APP_NAME}/deploy-ec2.sh"
 
       - name: Download backend artifacts on EC2 (SSM)
         shell: bash
@@ -152,10 +154,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/frontend-${{ github.sha }}.tar.gz"
-          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/frontend-latest.tar.gz"
-          aws s3 cp Caddyfile       "s3://${S3_BUCKET}/deployments/Caddyfile"
-          aws s3 cp docker-compose.prod.yml "s3://${S3_BUCKET}/deployments/docker-compose.prod.yml"
+          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-${{ github.sha }}.tar.gz"
+          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-latest.tar.gz"
+          aws s3 cp Caddyfile       "s3://${S3_BUCKET}/deployments/${APP_NAME}/Caddyfile"
+          aws s3 cp docker-compose.prod.yml "s3://${S3_BUCKET}/deployments/${APP_NAME}/docker-compose.prod.yml"
 
       - name: Deploy frontend on EC2 (SSM)
         shell: bash

@@ -60,12 +60,13 @@ From your local machine:
 # Copy docker-compose and Caddyfile
 scp docker-compose.prod.yml user@your-ec2:/opt/chore-tracker/
 scp Caddyfile user@your-ec2:/opt/chore-tracker/
-scp scripts/deploy-ec2.sh user@your-ec2:/opt/chore-tracker/
-scp scripts/backup-db.sh user@your-ec2:/opt/chore-tracker/
 
-# Make scripts executable
-ssh user@your-ec2 "chmod +x /opt/chore-tracker/*.sh"
+# Copy backup script (optional, for manual backups)
+scp scripts/backup-db.sh user@your-ec2:/opt/chore-tracker/scripts/
+ssh user@your-ec2 "chmod +x /opt/chore-tracker/scripts/backup-db.sh"
 ```
+
+**Note**: The `scripts/remote/` directory and `deploy-ec2.sh` are automatically deployed via GitHub Actions. They don't need to be manually copied.
 
 ### 4. Build and Deploy Docker Image
 

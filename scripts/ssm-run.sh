@@ -63,7 +63,8 @@ _ssm_send_command() {
 
   # Env file (small + safe)
   local env_text=""
-  for v in AWS_REGION S3_BUCKET; do
+  for v in AWS_REGION S3_BUCKET APP_NAME; do
+
     if [[ -n "${!v:-}" ]]; then env_text+="${v}=${!v}"$'\n'; fi
   done
 

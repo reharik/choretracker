@@ -6,7 +6,7 @@
 
 ```bash
 # Create directories
-sudo mkdir -p /opt/chore-tracker/{env,deploy,backups,frontend}
+sudo mkdir -p /opt/chore-tracker/{env,deploy,backups,frontend,scripts}
 sudo chown -R $USER:$USER /opt/chore-tracker
 
 # Create environment file
@@ -32,9 +32,11 @@ nano /opt/chore-tracker/env/prod.env
 # Copy deployment files
 scp docker-compose.prod.yml user@ec2:/opt/chore-tracker/
 scp Caddyfile user@ec2:/opt/chore-tracker/
-scp scripts/*.sh user@ec2:/opt/chore-tracker/
-ssh user@ec2 "chmod +x /opt/chore-tracker/*.sh"
+scp scripts/backup-db.sh user@ec2:/opt/chore-tracker/scripts/
+ssh user@ec2 "chmod +x /opt/chore-tracker/scripts/backup-db.sh"
 ```
+
+**Note**: Deployment scripts are automatically uploaded to S3 and run via SSM during GitHub Actions deployments.
 
 ## Deploy (Every time you update)
 
