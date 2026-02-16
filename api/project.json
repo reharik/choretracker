@@ -19,11 +19,7 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
-      "dependsOn": [
-        "ts-patch:install",
-        "clean",
-        "contracts:build"
-      ],
+      "dependsOn": ["ts-patch:install", "clean", "contracts:build"],
       "options": {
         "command": "vite build --config vite.config.mjs",
         "cwd": "{projectRoot}"

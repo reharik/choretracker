@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<void> {
     t.integer('allChoresCompleteBonusPercent').notNullable().defaultTo(25);
     t.timestamp('createdAt', { useTz: true }).notNullable().defaultTo(knex.fn.now());
     t.timestamp('updatedAt', { useTz: true }).notNullable().defaultTo(knex.fn.now());
-    
+
     t.unique(['userId']); // One settings record per user
   });
 }

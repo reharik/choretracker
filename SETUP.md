@@ -204,6 +204,7 @@ The contracts package contains shared TypeScript types and validation schemas us
 ### Path Aliases
 
 The root tsconfig.json configures path aliases:
+
 - `@chore-tracker/contracts` - Points to contracts/dist/src/index.d.ts
 
 ### Build System

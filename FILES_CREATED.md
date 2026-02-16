@@ -99,16 +99,19 @@ This document lists all the root-level and workspace configuration files that we
 ## Next Steps
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Build contracts:**
+
    ```bash
    npm run build
    ```
 
 3. **Set up environment variables:**
+
    ```bash
    cp .env.example .env
    cp api/.env.example api/.env

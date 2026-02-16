@@ -60,6 +60,7 @@ make dev-up
 ```
 
 This will:
+
 - Start PostgreSQL on port 5432
 - Start API on port 3000 with hot reload
 - Mount source code for live updates
@@ -146,21 +147,25 @@ CORS_ORIGIN=http://localhost:5173
 ## Development Workflow
 
 1. **Start services**:
+
    ```bash
    make dev-up
    ```
 
 2. **Run migrations**:
+
    ```bash
    npm run db:migrate
    ```
 
 3. **Seed database** (optional):
+
    ```bash
    npm run db:seed
    ```
 
 4. **View logs**:
+
    ```bash
    make dev-logs
    ```
@@ -175,16 +180,19 @@ CORS_ORIGIN=http://localhost:5173
 ## Production Deployment
 
 1. **Build images**:
+
    ```bash
    make build
    ```
 
 2. **Start services**:
+
    ```bash
    make up
    ```
 
 3. **Run migrations**:
+
    ```bash
    docker compose exec api npm run db:migrate:prod
    ```
@@ -231,6 +239,7 @@ make dev-up
 ### Multi-Stage Build
 
 The Dockerfile uses multi-stage builds to:
+
 - Separate development and production dependencies
 - Minimize production image size
 - Enable efficient caching
@@ -239,6 +248,7 @@ The Dockerfile uses multi-stage builds to:
 ### Hot Reload
 
 Development mode mounts source code as volumes:
+
 - Changes to source files trigger automatic reload
 - No need to rebuild images during development
 - node_modules excluded from mount for performance
@@ -246,6 +256,7 @@ Development mode mounts source code as volumes:
 ### Health Checks
 
 Services include health checks:
+
 - Database: `pg_isready` command
 - API: `/health` endpoint
 - Ensures services are ready before dependent services start

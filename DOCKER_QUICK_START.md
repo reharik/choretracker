@@ -3,6 +3,7 @@
 ## Issue Encountered
 
 The Docker dev environment failed because `awilix` package wasn't found. This happens because:
+
 1. Dependencies need to be installed on the host machine first
 2. Docker volume mounts the local `node_modules` into the container
 3. Without local dependencies, the container has nothing to mount
@@ -17,6 +18,7 @@ npm install
 ```
 
 This will install all dependencies including:
+
 - `awilix` (DI container)
 - `koa` and related packages
 - `knex` and `pg` (database)
@@ -53,16 +55,19 @@ curl http://localhost:3000/health
 ## Docker Development Workflow
 
 ### Starting Services
+
 ```bash
 make dev-up
 ```
 
 ### Stopping Services
+
 ```bash
 make dev-down
 ```
 
 ### Viewing Logs
+
 ```bash
 make dev-logs
 # or for specific service
@@ -71,6 +76,7 @@ docker compose -f docker-compose-dev.yml logs db -f
 ```
 
 ### Rebuilding After Dependency Changes
+
 ```bash
 # Stop containers
 make dev-down
@@ -87,6 +93,7 @@ docker compose -f docker-compose-dev.yml up -d --build
 If you prefer to run without Docker for development:
 
 ### Terminal 1: Start PostgreSQL
+
 ```bash
 # Using Docker just for database
 docker run -d \
@@ -99,12 +106,14 @@ docker run -d \
 ```
 
 ### Terminal 2: Run API
+
 ```bash
 cd /home/reharik/Development/ChoreTracker
 npm run dev:api
 ```
 
 ### Terminal 3: Run Web
+
 ```bash
 cd /home/reharik/Development/ChoreTracker
 npm run dev:web
@@ -113,6 +122,7 @@ npm run dev:web
 ## Environment Variables
 
 The `.env` file has been created at `api/.env` with:
+
 - Database connection to Docker PostgreSQL
 - JWT secret (change in production!)
 - CORS origin for local development

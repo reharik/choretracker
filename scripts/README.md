@@ -11,6 +11,7 @@ Main deployment script that runs on the EC2 instance.
 **Purpose**: Loads Docker image, starts services, runs migrations
 
 **Usage**:
+
 ```bash
 # On EC2 instance
 cd /opt/chore-tracker
@@ -18,6 +19,7 @@ cd /opt/chore-tracker
 ```
 
 **What it does**:
+
 1. Validates required files exist
 2. Loads Docker image from tar.gz
 3. Starts services via docker-compose
@@ -31,6 +33,7 @@ Database backup script with optional S3 upload.
 **Purpose**: Creates compressed PostgreSQL backups
 
 **Usage**:
+
 ```bash
 # Manual backup
 cd /opt/chore-tracker
@@ -41,12 +44,14 @@ cd /opt/chore-tracker
 ```
 
 **What it does**:
+
 1. Creates compressed SQL dump
 2. Optionally uploads to S3 (if `S3_BACKUP_BUCKET` is set)
 3. Cleans up old local backups (7 days)
 4. Cleans up old S3 backups (30 days)
 
 **Environment Variables**:
+
 - `S3_BACKUP_BUCKET` (optional): S3 bucket for remote backups
 
 ## Remote Scripts (for SSM-based deployment)
@@ -73,5 +78,6 @@ When creating new scripts:
 ## Reference
 
 For detailed deployment instructions, see:
+
 - [DEPLOYMENT.md](../DEPLOYMENT.md) - Comprehensive guide
 - [DEPLOYMENT_QUICKSTART.md](../DEPLOYMENT_QUICKSTART.md) - Quick reference

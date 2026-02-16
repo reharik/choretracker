@@ -118,11 +118,13 @@ ssh user@ec2 /opt/chore-tracker/deploy-ec2.sh
 ## 💰 Cost Estimate
 
 **Single EC2 Instance** (ChoreTracker only):
+
 - EC2 t4g.micro: ~$6-8/month (free tier eligible)
 - EBS Storage: ~$2/month
 - **Total: ~$8-10/month** (or $0-3/month with free tier)
 
 **Shared EC2 Instance** (Network + ChoreTracker):
+
 - Same EC2 instance, minimal additional cost
 - Slightly more storage: +$1/month
 - **Total: ~$9-12/month** (or $0-5/month with free tier)
@@ -150,14 +152,14 @@ ssh user@ec2 /opt/chore-tracker/deploy-ec2.sh
 
 ## 🔄 Comparison with Network App
 
-| Feature | Network App | ChoreTracker | Status |
-|---------|-------------|--------------|--------|
-| Docker Compose | ✅ | ✅ | Same structure |
-| Caddy Proxy | ✅ | ✅ | Same config |
-| Database Backups | ✅ | ✅ | Same script |
-| GitHub Actions | ✅ | 📝 | Template provided |
-| SSM Deployment | ✅ | 📝 | Can be added |
-| Health Checks | ✅ | ✅ | Same setup |
+| Feature          | Network App | ChoreTracker | Status            |
+| ---------------- | ----------- | ------------ | ----------------- |
+| Docker Compose   | ✅          | ✅           | Same structure    |
+| Caddy Proxy      | ✅          | ✅           | Same config       |
+| Database Backups | ✅          | ✅           | Same script       |
+| GitHub Actions   | ✅          | 📝           | Template provided |
+| SSM Deployment   | ✅          | 📝           | Can be added      |
+| Health Checks    | ✅          | ✅           | Same setup        |
 
 ## 📞 Support
 

@@ -96,24 +96,24 @@ Update ports in `docker-compose.prod.yml`:
 ```yaml
 api:
   ports:
-    - '127.0.0.1:3001:3000'  # Use 3001 instead of 3000
+    - '127.0.0.1:3001:3000' # Use 3001 instead of 3000
 
 proxy:
   ports:
-    - '8080:80'    # Use 8080 instead of 80
-    - '8443:443'   # Use 8443 instead of 443
+    - '8080:80' # Use 8080 instead of 80
+    - '8443:443' # Use 8443 instead of 443
 ```
 
 Update Caddyfile to use different ports or domains.
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| API not responding | `docker logs chore-tracker-api` |
+| Issue                      | Solution                                                |
+| -------------------------- | ------------------------------------------------------- |
+| API not responding         | `docker logs chore-tracker-api`                         |
 | Database connection failed | Check `env/prod.env` and `docker logs chore-tracker-db` |
-| Frontend not loading | Check `ls -la /opt/chore-tracker/frontend/` |
-| Port already in use | Change ports in `docker-compose.prod.yml` |
+| Frontend not loading       | Check `ls -la /opt/chore-tracker/frontend/`             |
+| Port already in use        | Change ports in `docker-compose.prod.yml`               |
 
 ---
 

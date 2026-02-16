@@ -9,6 +9,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
 ### API Infrastructure (Complete)
 
 #### Core Files
+
 1. **config.ts** - Environment configuration management
    - Database configuration (PostgreSQL)
    - JWT configuration
@@ -34,6 +35,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
    - Graceful shutdown handlers (SIGINT, SIGTERM)
 
 #### Dependency Injection (Awilix)
+
 1. **container.ts** - Awilix DI container
    - Container initialization
    - Manual service registration (database, logger)
@@ -46,6 +48,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
    - Scans: repositories, controllers, middleware, routes, koaServer
 
 #### Middleware
+
 1. **errorHandler.ts** - Global error handling
    - HTTP error handling
    - Error logging with context
@@ -67,6 +70,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
    - `optionalAuth` - Allows both auth states
 
 #### Server Setup
+
 1. **koaServer.ts** - Koa application setup
    - Middleware pipeline configuration
    - CORS setup
@@ -81,6 +85,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
    - Server startup
 
 #### Type Definitions
+
 1. **types/koa.d.ts** - Koa type extensions
    - Database context
    - User context
@@ -88,6 +93,7 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
    - TypedContext helper
 
 #### Routes
+
 1. **routes/createRoutes.ts** - Route aggregator
    - Mounts all route modules
    - Awilix resolver marker
@@ -95,11 +101,13 @@ This document summarizes the complete infrastructure setup for the ChoreTracker 
 ### Original API Files (Restored)
 
 The original API files have been restored from `_original/` directories:
+
 - **controllers/choreController.ts** - Chore business logic
 - **repositories/choreRepository.ts** - Database operations
 - **routes/choreRoutes.ts** - Route definitions
 
 These files now have access to:
+
 - Full DI container
 - Logger
 - Database connection
@@ -109,23 +117,27 @@ These files now have access to:
 ## Web Infrastructure (Partial)
 
 ### Directories Created
+
 - `web/src/styles/` - Theme and styling
 - `web/src/ui/` - UI components
 
 ### Files Needed (From Network Template)
+
 1. **styles/theme.ts** - Theme configuration
 2. **styles/styled.d.ts** - TypeScript theme types
 3. **styles/globalStyle.ts** - Global CSS
 4. **ui/Primitives.tsx** - Basic UI components (Card, Button, HStack, VStack, etc.)
 5. **ui/FormInput.tsx** - Form input component with error handling
 
-### Original Web Files (In _original/)
+### Original Web Files (In \_original/)
+
 - **hooks/useChoreService.ts** - API service hook
 - **pages/Chores.tsx** - Main chores page
 
 ## Configuration Files Updated
 
 ### API
+
 - `api/tsconfig.json` - Excludes `_original/**`
 - `api/eslint.config.js` - Ignores `_original/**`, `db/**`
 - `api/package.json` - Dependencies for Koa, Knex, Awilix, Winston
@@ -133,6 +145,7 @@ These files now have access to:
 - `api/nodemon.json` - Development server configuration
 
 ### Web
+
 - `web/tsconfig.json` - Excludes `_original/**`
 - `web/eslint.config.js` - Ignores `_original/**`
 - `web/package.json` - Dependencies for React, styled-components
@@ -141,6 +154,7 @@ These files now have access to:
 ## Dependencies Added
 
 ### API Dependencies
+
 ```json
 {
   "dependencies": {
@@ -165,6 +179,7 @@ These files now have access to:
 ```
 
 ### Web Dependencies
+
 ```json
 {
   "dependencies": {
@@ -176,12 +191,14 @@ These files now have access to:
 ## Architecture Patterns
 
 ### Dependency Injection
+
 - **Awilix** container with PROXY injection mode
 - Convention-based registration: `createX` -> `x`
 - Auto-loading from file system
 - Type-safe container with TypeScript
 
 ### Middleware Pipeline
+
 1. Error handler (catches all errors)
 2. Request logger (logs all requests)
 3. CORS (enables cross-origin requests)
@@ -191,12 +208,14 @@ These files now have access to:
 7. Health check (no auth required)
 
 ### Database
+
 - **Knex.js** query builder
 - PostgreSQL connection
 - Null to undefined conversion
 - Migration and seed support
 
 ### Logging
+
 - **Winston** structured logging
 - JSON format for production
 - Multiple log levels
@@ -205,6 +224,7 @@ These files now have access to:
 ## Environment Variables
 
 ### Required (.env)
+
 ```env
 # Database
 POSTGRES_HOST=127.0.0.1
@@ -230,6 +250,7 @@ LOG_LEVEL=debug
 ## Next Steps
 
 ### To Complete Web Infrastructure
+
 1. Create `web/src/styles/theme.ts`
 2. Create `web/src/styles/styled.d.ts`
 3. Create `web/src/styles/globalStyle.ts`
@@ -241,6 +262,7 @@ LOG_LEVEL=debug
 9. Restore and fix `web/src/pages/Chores.tsx`
 
 ### To Test
+
 1. Run `npm install` to install new dependencies
 2. Run `npm run build` to verify build works
 3. Run `npm run lint` to verify linting passes

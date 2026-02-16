@@ -33,16 +33,21 @@ network/
 ## Wiring Changes (existing files to update)
 
 ### 1. `packages/contracts/src/index.ts`
+
 Add the export:
+
 ```ts
 export * from './types/chores';
 ```
 
 ### 2. `packages/contracts/src/types/entities.ts`
+
 No changes needed — chore types live in their own file.
 
 ### 3. `apps/api/src/routes/createRoutes.ts`
+
 Add `choreRoutes` to the destructured container and mount it:
+
 ```ts
 export const createRoutes = ({
   userRoutes,
@@ -52,7 +57,7 @@ export const createRoutes = ({
   authRoutes,
   communicationRoutes,
   healthRoutes,
-  choreRoutes,        // ← add
+  choreRoutes, // ← add
 }: Container): Routes => ({
   mountRoutes: (router: Router) => {
     healthRoutes.mountRoutes(router);
@@ -62,13 +67,15 @@ export const createRoutes = ({
     planRoutes.mountRoutes(router);
     touchesRoutes.mountRoutes(router);
     communicationRoutes.mountRoutes(router);
-    choreRoutes.mountRoutes(router);   // ← add
+    choreRoutes.mountRoutes(router); // ← add
   },
 });
 ```
 
 ### 4. `apps/api/src/di/awilix.autoload.d.ts`
+
 Add these type imports and container entries:
+
 ```ts
 // Add these type declarations:
 type ChoreRepository = import('../repositories/choreRepository').ChoreRepository;
@@ -83,10 +90,13 @@ export interface AutoLoadedContainer {
   choreRoutes: ChoreRoutes;
 }
 ```
+
 Or just run `npm run gen:container` if that regenerates it automatically.
 
 ### 5. `apps/web/src/Routes.tsx`
+
 Add the lazy import and route:
+
 ```tsx
 const Chores = lazy(async () => {
   const mod = await import('./pages/Chores');
@@ -94,10 +104,11 @@ const Chores = lazy(async () => {
 });
 
 // Inside the protected route group:
-<Route path="chores" element={<Chores />} />
+<Route path="chores" element={<Chores />} />;
 ```
 
 ### 6. Navigation (Layout.tsx or wherever your nav lives)
+
 Add a link to `/chores` in your nav menu.
 
 ## Run the Migration
@@ -112,15 +123,15 @@ npx knex migrate:latest
 
 All routes are under `/api/chores` and require auth:
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/chores/weekly?weekKey=2026-W07` | Full weekly summary (chores, extras, checks, computed totals) |
-| POST | `/chores` | Create a base chore `{ name, baseValue, timesPerWeek }` |
-| PATCH | `/chores/:id` | Update a chore |
-| DELETE | `/chores/:id` | Delete a chore |
-| POST | `/chores/extras` | Create an extra chore `{ name, value, weekKey }` |
-| DELETE | `/chores/extras/:id` | Delete an extra |
-| POST | `/chores/checks/toggle` | Toggle a check `{ choreId?, choreExtraId?, weekKey, dayIndex }` |
+| Method | Path                              | Description                                                     |
+| ------ | --------------------------------- | --------------------------------------------------------------- |
+| GET    | `/chores/weekly?weekKey=2026-W07` | Full weekly summary (chores, extras, checks, computed totals)   |
+| POST   | `/chores`                         | Create a base chore `{ name, baseValue, timesPerWeek }`         |
+| PATCH  | `/chores/:id`                     | Update a chore                                                  |
+| DELETE | `/chores/:id`                     | Delete a chore                                                  |
+| POST   | `/chores/extras`                  | Create an extra chore `{ name, value, weekKey }`                |
+| DELETE | `/chores/extras/:id`              | Delete an extra                                                 |
+| POST   | `/chores/checks/toggle`           | Toggle a check `{ choreId?, choreExtraId?, weekKey, dayIndex }` |
 
 ## Notes
 

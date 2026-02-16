@@ -18,7 +18,7 @@
     "db:seed:prod": "docker compose -f docker-compose.yml exec -T api npm run db:seed:local --workspace=@app/api",
     "dev:api": "nx run api:serve",
     "dev:web": "nx run web:serve",
-    "format": "nx run-many --target=format --all",
+    "format": "prettier --write .",
     "format:check": "prettier --check .",
     "graph": "nx graph",
     "lint": "nx run-many -t lint --projects=api,web,contracts",

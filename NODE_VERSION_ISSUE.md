@@ -13,6 +13,7 @@ TypeError: getGeneratorFunction is not a function
 ## Root Cause
 
 The issue was caused by:
+
 - **Koa 2.16.3** using `is-generator-function@1.1.2`
 - `is-generator-function@1.1.2` has a dependency on the `generator-function` package
 - The `generator-function` package has compatibility issues with Node.js v24
@@ -22,12 +23,14 @@ The issue was caused by:
 **Pinned Koa to exactly version 2.16.2**, which uses `is-generator-function@1.1.0` (the same version used by the network application).
 
 Key differences between versions:
+
 - `is-generator-function@1.1.0`: Implements generator detection inline (works with Node.js v24)
 - `is-generator-function@1.1.2`: Requires external `generator-function` package (fails with Node.js v24)
 
 ### Changes Made
 
 1. Updated `api/package.json`:
+
    ```json
    "koa": "2.16.2"  // Changed from "^2.16.2"
    ```
@@ -50,6 +53,7 @@ $ curl http://localhost:3000/health
 ## Why This Works
 
 The network application (`~/Development/network`) uses the same configuration:
+
 - Node.js v24.12.0
 - Koa 2.16.2
 - is-generator-function@1.1.0

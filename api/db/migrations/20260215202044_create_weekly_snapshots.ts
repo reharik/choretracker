@@ -8,10 +8,10 @@ export async function up(knex: Knex): Promise<void> {
     table.jsonb('snapshotData').notNullable(); // Stores the entire weekly summary
     table.timestamp('paidAt').notNullable().defaultTo(knex.fn.now());
     table.timestamp('createdAt').notNullable().defaultTo(knex.fn.now());
-    
+
     // Unique constraint: one snapshot per user per week
     table.unique(['weekKey', 'userId']);
-    
+
     // Index for faster lookups
     table.index(['weekKey', 'userId']);
   });

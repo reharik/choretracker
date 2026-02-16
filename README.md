@@ -12,7 +12,7 @@ This is a monorepo using npm workspaces and Nx for build orchestration:
 
 ## Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm 9+
 - PostgreSQL (or SQLite for development)
 

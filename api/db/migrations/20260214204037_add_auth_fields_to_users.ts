@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable('users', (table) => {
     // Role: 'adult' or 'kid'
     table.string('role', 20).notNullable().defaultTo('kid');
-    
+
     // Auth fields
     table.string('firstName', 100).nullable();
     table.string('lastName', 100).nullable();

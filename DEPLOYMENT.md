@@ -47,6 +47,7 @@ EOF
 ```
 
 **IMPORTANT**: Update the following values:
+
 - `POSTGRES_PASSWORD`: Use a strong password
 - `JWT_SECRET`: Generate with `openssl rand -base64 64`
 - `CORS_ORIGIN`: Your actual EC2 IP or domain
@@ -200,6 +201,7 @@ mkdir -p .github/workflows
 ```
 
 Key changes needed:
+
 - Replace `network` with `chore-tracker` throughout
 - Update S3 paths
 - Update SSM tag targeting (`SSM_TAG_APP: chore-tracker`)
@@ -209,6 +211,7 @@ Key changes needed:
 Both apps can run on the same EC2 instance. Key considerations:
 
 ### Port Allocation
+
 - **Network**: API on 3000, Proxy on 80/443
 - **ChoreTracker**: API on 3001, Proxy on 8080/8443
 
@@ -217,12 +220,12 @@ Update `docker-compose.prod.yml` for ChoreTracker:
 ```yaml
 api:
   ports:
-    - '127.0.0.1:3001:3000'  # Changed from 3000
+    - '127.0.0.1:3001:3000' # Changed from 3000
 
 proxy:
   ports:
-    - '8080:80'    # Changed from 80
-    - '8443:443'   # Changed from 443
+    - '8080:80' # Changed from 80
+    - '8443:443' # Changed from 443
 ```
 
 ### Caddyfile for Multiple Apps
@@ -332,6 +335,7 @@ Running both Network and ChoreTracker on the same EC2 instance:
 ## Support
 
 For issues or questions:
+
 - Check logs: `docker compose logs`
 - Review Network app deployment for reference
 - Check AWS Systems Manager for SSM-based deployments
