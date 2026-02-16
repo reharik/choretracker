@@ -24,7 +24,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   # Update this with your S3 bucket name
-  S3_BUCKET: chore-tracker-deploy-ACCOUNT_ID-us-east-1
+  S3_BUCKET: network-deploy-709865789463-us-east-1
 
   # Tag targeting defaults (used by scripts/ssm-run.sh)
   SSM_TAG_HOST: prod-shared
