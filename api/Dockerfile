@@ -36,6 +36,8 @@ FROM base AS build
 WORKDIR /repo
 COPY --from=deps-dev-staging /repo/node_modules ./node_modules
 COPY . .
+# Disable Nx daemon in Docker (causes hangs/crashes)
+ENV NX_DAEMON=false
 # Clear Nx cache to avoid stale state issues
 RUN npx nx reset || true
 # Build contracts first (required dependency)

@@ -157,7 +157,6 @@ jobs:
           aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-${{ github.sha }}.tar.gz"
           aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-latest.tar.gz"
           aws s3 cp Caddyfile       "s3://${S3_BUCKET}/deployments/${APP_NAME}/Caddyfile"
-          aws s3 cp docker-compose.prod.yml "s3://${S3_BUCKET}/deployments/${APP_NAME}/docker-compose.prod.yml"
 
       - name: Deploy frontend on EC2 (SSM)
         shell: bash
