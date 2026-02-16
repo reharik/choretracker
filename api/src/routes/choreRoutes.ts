@@ -24,6 +24,9 @@ export const createChoreRoutes = ({ choreController }: Container): ChoreRoutes =
     router.get('/chores/bonus-settings', requireAuth(choreController.getBonusSettings));
     router.patch('/chores/bonus-settings', requireAuth(choreController.updateBonusSettings));
 
+    // Snapshots (payday)
+    router.post('/chores/snapshot', requireAuth(choreController.createSnapshot));
+
     // Base chores CRUD
     router.post('/chores', requireAuth(choreController.createChore));
     router.patch('/chores/:id', requireAuth(typedHandler(choreController.updateChore)));

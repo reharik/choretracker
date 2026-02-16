@@ -6,9 +6,11 @@ import type {
   ChoreWeeklySummary,
   CreateChoreExtraInput,
   CreateChoreInput,
+  CreateSnapshotInput,
   ToggleCheckInput,
   UpdateBonusSettingsInput,
   UpdateChoreInput,
+  WeeklySnapshot,
 } from '@chore-tracker/contracts';
 import { RESOLVER } from 'awilix';
 import type { Container } from '../container';
@@ -29,6 +31,8 @@ export interface ChoreRepository {
   getWeeklySummary: (weekKey: string, userId?: string) => Promise<ChoreWeeklySummary>;
   getBonusSettings: (userId: string) => Promise<BonusSettings>;
   updateBonusSettings: (userId: string, input: UpdateBonusSettingsInput) => Promise<BonusSettings>;
+  createSnapshot: (userId: string, input: CreateSnapshotInput) => Promise<WeeklySnapshot>;
+  getSnapshot: (userId: string, weekKey: string) => Promise<WeeklySnapshot | undefined>;
 }
 
 export const createChoreRepository = ({ connection, logger }: Container): ChoreRepository => ({
@@ -144,6 +148,22 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
   },
 
   getWeeklySummary: async (weekKey: string, userId?: string): Promise<ChoreWeeklySummary> => {
+    // Check if there's a snapshot for this week (if userId provided)
+    if (userId) {
+      const snapshot = await connection('weekly_snapshots')
+        .where({ userId, weekKey })
+        .first();
+      
+      if (snapshot) {
+        // Return snapshot data with isPaid flag
+        const data = typeof snapshot.snapshotData === 'string' 
+          ? JSON.parse(snapshot.snapshotData) 
+          : snapshot.snapshotData;
+        return { ...data, isPaid: true };
+      }
+    }
+
+    // No snapshot found, calculate live data
     const [chores, extras, checks] = await Promise.all([
       connection('chores').where({ isActive: true }).orderBy('sortOrder', 'asc'),
       connection('chore_extras').where({ weekKey }).orderBy('createdAt', 'asc'),
@@ -227,6 +247,7 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
       completionRate,
       bonusActive,
       bonusSettings: settings,
+      isPaid: false, // Live data is not paid yet
     };
   },
 
@@ -283,6 +304,70 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
       .returning('*');
 
     return updated;
+  },
+
+  createSnapshot: async (userId: string, input: CreateSnapshotInput): Promise<WeeklySnapshot> => {
+    const { weekKey } = input;
+    
+    // Get the current weekly summary
+    const summary = await createChoreRepository({ connection, logger }).getWeeklySummary(weekKey, userId);
+    
+    // Check if snapshot already exists
+    const existing = await connection('weekly_snapshots')
+      .where({ userId, weekKey })
+      .first();
+    
+    if (existing) {
+      // Update existing snapshot
+      const [updated] = await connection('weekly_snapshots')
+        .where({ userId, weekKey })
+        .update({
+          snapshotData: JSON.stringify(summary),
+          paidAt: connection.fn.now(),
+        })
+        .returning('*');
+      
+      return {
+        ...updated,
+        snapshotData: typeof updated.snapshotData === 'string' 
+          ? JSON.parse(updated.snapshotData) 
+          : updated.snapshotData,
+      };
+    }
+    
+    // Create new snapshot
+    const [snapshot] = await connection('weekly_snapshots')
+      .insert({
+        id: connection.raw('gen_random_uuid()'),
+        userId,
+        weekKey,
+        snapshotData: JSON.stringify(summary),
+      })
+      .returning('*');
+    
+    return {
+      ...snapshot,
+      snapshotData: typeof snapshot.snapshotData === 'string' 
+        ? JSON.parse(snapshot.snapshotData) 
+        : snapshot.snapshotData,
+    };
+  },
+
+  getSnapshot: async (userId: string, weekKey: string): Promise<WeeklySnapshot | undefined> => {
+    const snapshot = await connection('weekly_snapshots')
+      .where({ userId, weekKey })
+      .first();
+    
+    if (!snapshot) {
+      return undefined;
+    }
+    
+    return {
+      ...snapshot,
+      snapshotData: typeof snapshot.snapshotData === 'string' 
+        ? JSON.parse(snapshot.snapshotData) 
+        : snapshot.snapshotData,
+    };
   },
 });
 

@@ -76,6 +76,13 @@ export const useChoreService = () => {
     });
   };
 
+  const createSnapshot = async (weekKey: string): Promise<ApiResult<unknown>> => {
+    return apiFetch('/chores/snapshot', {
+      method: 'POST',
+      body: { weekKey },
+    });
+  };
+
   return {
     getWeeklySummary,
     createChore,
@@ -86,5 +93,6 @@ export const useChoreService = () => {
     toggleCheck,
     getBonusSettings,
     updateBonusSettings,
+    createSnapshot,
   };
 };

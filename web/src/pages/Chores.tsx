@@ -25,22 +25,69 @@ const FULL_DAYS = [
 
 function getCurrentWeekKey(): string {
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const weekNum = Math.ceil(
-    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7,
-  );
-  return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  const year = now.getFullYear();
+  
+  // ISO week date: Week 1 is the week with the first Thursday
+  const jan4 = new Date(year, 0, 4);
+  const jan4Day = jan4.getDay() || 7; // Sunday = 7
+  const week1Monday = new Date(jan4);
+  week1Monday.setDate(jan4.getDate() - jan4Day + 1);
+  
+  // Calculate current week number
+  const daysDiff = Math.floor((now.getTime() - week1Monday.getTime()) / 86400000);
+  const weekNum = Math.floor(daysDiff / 7) + 1;
+  
+  return `${year}-W${String(weekNum).padStart(2, '0')}`;
 }
 
-function getWeekLabel(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const mon = new Date(now);
-  mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+function getWeekLabel(weekKey: string): string {
+  // Parse weekKey (e.g., "2026-W07")
+  const [year, weekStr] = weekKey.split('-W');
+  const weekNum = parseInt(weekStr, 10);
+  
+  // ISO week date calculation: Week 1 is the week with the first Thursday of the year
+  const jan4 = new Date(parseInt(year, 10), 0, 4);
+  const jan4Day = jan4.getDay() || 7; // Sunday = 7
+  const week1Monday = new Date(jan4);
+  week1Monday.setDate(jan4.getDate() - jan4Day + 1);
+  
+  // Calculate Monday of the target week
+  const mon = new Date(week1Monday);
+  mon.setDate(week1Monday.getDate() + (weekNum - 1) * 7);
+  
   const sun = new Date(mon);
   sun.setDate(mon.getDate() + 6);
+  
   const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
   return `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function addWeeks(weekKey: string, weeks: number): string {
+  // Parse weekKey (e.g., "2026-W07")
+  const [year, weekStr] = weekKey.split('-W');
+  const weekNum = parseInt(weekStr, 10);
+  
+  // ISO week date calculation
+  const jan4 = new Date(parseInt(year, 10), 0, 4);
+  const jan4Day = jan4.getDay() || 7;
+  const week1Monday = new Date(jan4);
+  week1Monday.setDate(jan4.getDate() - jan4Day + 1);
+  
+  // Calculate Monday of the target week
+  const targetMonday = new Date(week1Monday);
+  targetMonday.setDate(week1Monday.getDate() + (weekNum - 1) * 7 + (weeks * 7));
+  
+  // Calculate new week number for the target date
+  const targetYear = targetMonday.getFullYear();
+  const targetJan4 = new Date(targetYear, 0, 4);
+  const targetJan4Day = targetJan4.getDay() || 7;
+  const targetWeek1Monday = new Date(targetJan4);
+  targetWeek1Monday.setDate(targetJan4.getDate() - targetJan4Day + 1);
+  
+  const daysDiff = Math.floor((targetMonday.getTime() - targetWeek1Monday.getTime()) / 86400000);
+  const newWeekNum = Math.floor(daysDiff / 7) + 1;
+  
+  return `${targetYear}-W${String(newWeekNum).padStart(2, '0')}`;
 }
 
 // ── Styled Components ──
@@ -62,6 +109,66 @@ const Subtitle = styled.p`
   font-size: 0.85rem;
   color: ${({ theme }) => theme.colors.subtext};
   margin: 4px 0 0;
+`;
+
+const WeekNavigation = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing(2)};
+  margin-top: ${({ theme }) => theme.spacing(2)};
+`;
+
+const WeekLabel = styled.div`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  min-width: 140px;
+  text-align: center;
+`;
+
+const NavButton = styled.button`
+  background: ${({ theme }) => theme.colors.panel};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bg};
+    border-color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const TodayButton = styled.button`
+  background: ${({ theme }) => theme.colors.panel};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bg};
+    border-color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const ProgressBarOuter = styled.div`
@@ -213,6 +320,7 @@ const LegendCard = styled(Card)`
 export const Chores = () => {
   const choreService = useChoreService();
   const { user, logout } = useAuth();
+  const [weekKey, setWeekKey] = useState(getCurrentWeekKey());
   const [summary, setSummary] = useState<ChoreWeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -223,9 +331,12 @@ export const Chores = () => {
     overCompletionBonusPercent: 50,
     allChoresCompleteBonusPercent: 25,
   });
+  const [editingChore, setEditingChore] = useState<string | null>(null);
+  const [editChoreData, setEditChoreData] = useState<{ name: string; baseValue: string; timesPerWeek: string }>({ name: '', baseValue: '', timesPerWeek: '' });
+  const [isPaid, setIsPaid] = useState(false);
 
-  const weekKey = getCurrentWeekKey();
   const isAdult = user?.role === 'adult';
+  const isCurrentWeek = weekKey === getCurrentWeekKey();
 
   const loadSummary = useCallback(async () => {
     const result = await choreService.getWeeklySummary(weekKey);
@@ -235,13 +346,28 @@ export const Chores = () => {
         overCompletionBonusPercent: result.data.bonusSettings.overCompletionBonusPercent,
         allChoresCompleteBonusPercent: result.data.bonusSettings.allChoresCompleteBonusPercent,
       });
+      // Check if this week has been paid (has a snapshot)
+      setIsPaid(result.data.isPaid || false);
     }
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekKey]);
 
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
+
+  const handlePreviousWeek = () => {
+    setWeekKey((prev) => addWeeks(prev, -1));
+  };
+
+  const handleNextWeek = () => {
+    setWeekKey((prev) => addWeeks(prev, 1));
+  };
+
+  const handleCurrentWeek = () => {
+    setWeekKey(getCurrentWeekKey());
+  };
 
   const handleToggle = async (choreId?: string, choreExtraId?: string, dayIndex?: number) => {
     if (dayIndex == null) return;
@@ -279,6 +405,42 @@ export const Chores = () => {
   const handleDeleteExtra = async (id: string) => {
     await choreService.deleteExtra(id);
     await loadSummary();
+  };
+
+  const handleStartEditChore = (chore: ChoreWithStats) => {
+    setEditingChore(chore.id);
+    setEditChoreData({
+      name: chore.name,
+      baseValue: String(chore.baseValue),
+      timesPerWeek: String(chore.timesPerWeek),
+    });
+  };
+
+  const handleSaveChore = async (id: string) => {
+    if (!editChoreData.name || !editChoreData.baseValue || !editChoreData.timesPerWeek) return;
+    await choreService.updateChore(id, {
+      name: editChoreData.name,
+      baseValue: Number(editChoreData.baseValue),
+      timesPerWeek: Number(editChoreData.timesPerWeek),
+    });
+    setEditingChore(null);
+    await loadSummary();
+  };
+
+  const handleCancelEditChore = () => {
+    setEditingChore(null);
+    setEditChoreData({ name: '', baseValue: '', timesPerWeek: '' });
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!window.confirm(`Mark week ${getWeekLabel(weekKey)} as paid? This will create a snapshot and freeze the data for this week.`)) {
+      return;
+    }
+    const result = await choreService.createSnapshot(weekKey);
+    if (result.success) {
+      setIsPaid(true);
+      await loadSummary();
+    }
   };
 
   const isChecked = (choreId?: string, choreExtraId?: string, dayIndex?: number): boolean => {
@@ -359,7 +521,7 @@ export const Chores = () => {
 
     const blankExtras = '';
 
-    const html = `<!DOCTYPE html><html><head><title>Chore Bank – ${getWeekLabel()}</title>
+    const html = `<!DOCTYPE html><html><head><title>Chore Bank – ${getWeekLabel(weekKey)}</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap');
       * { box-sizing:border-box; margin:0; padding:0; }
@@ -369,7 +531,7 @@ export const Chores = () => {
     </style></head><body>
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
         <h1 style="font-family:'JetBrains Mono',monospace;font-size:26px;color:#16a34a;">💰 CHORE BANK</h1>
-        <span style="font-size:14px;color:#666;">Week of ${getWeekLabel()}</span>
+        <span style="font-size:14px;color:#666;">Week of ${getWeekLabel(weekKey)}</span>
       </div>
       <p style="font-size:12px;color:#999;margin-bottom:12px;">Do the work, get the bread.</p>
       <table>
@@ -429,9 +591,19 @@ export const Chores = () => {
       <HStack style={{ justifyContent: 'space-between', marginBottom: 16 }} stackOnMobile>
         <div>
           <Title>💰 CHORE BANK</Title>
-          <Subtitle>
-            {weekKey} ({getWeekLabel()}) · {user?.name || user?.email}
-          </Subtitle>
+          <Subtitle>{user?.name || user?.email}</Subtitle>
+          <WeekNavigation>
+            <NavButton onClick={handlePreviousWeek} title="Previous week">
+              ‹
+            </NavButton>
+            <WeekLabel>{getWeekLabel(weekKey)}</WeekLabel>
+            <NavButton onClick={handleNextWeek} title="Next week">
+              ›
+            </NavButton>
+            <TodayButton onClick={handleCurrentWeek} disabled={isCurrentWeek}>
+              Current Week
+            </TodayButton>
+          </WeekNavigation>
         </div>
         <HStack gap={1}>
           {isAdult && (
@@ -460,16 +632,28 @@ export const Chores = () => {
       {showPayday && (
         <PaydayCard style={{ marginBottom: 16 }}>
           <VStack gap={1}>
-            <h3
-              style={{
-                fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
-                fontSize: '1rem',
-                color: '#22c55e',
-                margin: 0,
-              }}
-            >
-              💵 PAYDAY BREAKDOWN
-            </h3>
+            <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3
+                style={{
+                  fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
+                  fontSize: '1rem',
+                  color: '#22c55e',
+                  margin: 0,
+                }}
+              >
+                💵 PAYDAY BREAKDOWN
+              </h3>
+              {isAdult && isCurrentWeek && !isPaid && (
+                <Button size="sm" onClick={handleMarkAsPaid}>
+                  ✓ Mark as Paid
+                </Button>
+              )}
+              {isPaid && (
+                <span style={{ fontSize: '0.75rem', color: '#22c55e', fontWeight: 600 }}>
+                  ✓ PAID
+                </span>
+              )}
+            </HStack>
             {summary.chores.map((c: ChoreWithStats) => (
               <PaydayRow key={c.id}>
                 <span>
@@ -597,17 +781,68 @@ export const Chores = () => {
           <VStack gap={2}>
             <h3 style={{ fontSize: '0.9rem', color: '#facc15', margin: 0 }}>Edit Base Chores</h3>
             {summary.chores.map((c: ChoreWithStats) => (
-              <HStack key={c.id} style={{ justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.85rem' }}>
-                  {c.name}{' '}
-                  <span style={{ color: '#a8b3c7', fontSize: '0.7rem', marginLeft: 6 }}>
-                    ${Number(c.baseValue).toFixed(2)} × {c.timesPerWeek}/wk
-                  </span>
-                </span>
-                <Button variant="danger" size="sm" onClick={() => handleDeleteChore(c.id)}>
-                  Remove
-                </Button>
-              </HStack>
+              <div key={c.id}>
+                {editingChore === c.id ? (
+                  <HStack gap={1} wrap style={{ marginBottom: 8 }}>
+                    <FormInput
+                      label=""
+                      placeholder="Chore name"
+                      value={editChoreData.name}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setEditChoreData({ ...editChoreData, name: e.target.value })
+                      }
+                      style={{ flex: '1 1 130px', minWidth: 110 }}
+                    />
+                    <FormInput
+                      label=""
+                      placeholder="$ each"
+                      type="number"
+                      step="0.25"
+                      min="0"
+                      value={editChoreData.baseValue}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setEditChoreData({ ...editChoreData, baseValue: e.target.value })
+                      }
+                      style={{ width: 80 }}
+                    />
+                    <FormInput
+                      label=""
+                      placeholder="x/wk"
+                      type="number"
+                      min="1"
+                      max="7"
+                      value={editChoreData.timesPerWeek}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setEditChoreData({ ...editChoreData, timesPerWeek: e.target.value })
+                      }
+                      style={{ width: 65 }}
+                    />
+                    <Button size="sm" onClick={() => handleSaveChore(c.id)}>
+                      ✓ Save
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleCancelEditChore}>
+                      Cancel
+                    </Button>
+                  </HStack>
+                ) : (
+                  <HStack style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: '0.85rem' }}>
+                      {c.name}{' '}
+                      <span style={{ color: '#a8b3c7', fontSize: '0.7rem', marginLeft: 6 }}>
+                        ${Number(c.baseValue).toFixed(2)} × {c.timesPerWeek}/wk
+                      </span>
+                    </span>
+                    <HStack gap={1}>
+                      <Button variant="secondary" size="sm" onClick={() => handleStartEditChore(c)}>
+                        Edit
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteChore(c.id)}>
+                        Remove
+                      </Button>
+                    </HStack>
+                  </HStack>
+                )}
+              </div>
             ))}
             <HStack gap={1} wrap>
               <FormInput
@@ -869,7 +1104,6 @@ export const Chores = () => {
         </span>
         <br />⭐ <span style={{ color: '#f97316' }}>Extra chores</span> are elective one-offs — add
         them in Edit mode.
-        <br />❌ Skip a chore entirely? $0 for that one.
       </LegendCard>
     </PageWrapper>
   );

@@ -51,6 +51,30 @@ const SignupLink = styled.p`
   }
 `;
 
+const PasswordInputWrapper = styled.div`
+  position: relative;
+`;
+
+const PasswordToggleButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.subtext};
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,6 +83,7 @@ export const Login = () => {
   const [showSignup, setShowSignup] = useState(false);
   const [name, setName] = useState('');
   const [role, setRole] = useState<'adult' | 'kid'>('kid');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, signup } = useAuth();
 
   const toggleForm = () => {
@@ -143,7 +168,7 @@ export const Login = () => {
                     label="Password"
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
                     value={password}
@@ -225,17 +250,26 @@ export const Login = () => {
                   placeholder="Enter your email"
                 />
 
-                <FormInput
-                  label="Password"
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                />
+                <PasswordInputWrapper>
+                  <FormInput
+                    label="Password"
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                  />
+                  <PasswordToggleButton
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </PasswordToggleButton>
+                </PasswordInputWrapper>
 
                 <Button type="submit" disabled={isLoading} fullWidth>
                   {isLoading ? 'Signing in...' : 'Sign in'}

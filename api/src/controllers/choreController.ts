@@ -13,6 +13,7 @@ export interface ChoreController {
   toggleCheck: (ctx: Context) => Promise<Context>;
   getBonusSettings: (ctx: Context) => Promise<Context>;
   updateBonusSettings: (ctx: Context) => Promise<Context>;
+  createSnapshot: (ctx: Context) => Promise<Context>;
 }
 
 export const createChoreController = ({ choreRepository }: Container): ChoreController => ({
@@ -165,6 +166,22 @@ export const createChoreController = ({ choreRepository }: Container): ChoreCont
     });
     ctx.status = 200;
     ctx.body = settings;
+    return ctx;
+  },
+
+  createSnapshot: async (ctx: Context): Promise<Context> => {
+    const userId = ctx.user!.id;
+    const { weekKey } = ctx.request.body as CreateSnapshotInput;
+
+    if (!weekKey) {
+      ctx.status = 400;
+      ctx.body = { error: 'weekKey is required' };
+      return ctx;
+    }
+
+    const snapshot = await choreRepository.createSnapshot(userId, { weekKey });
+    ctx.status = 201;
+    ctx.body = snapshot;
     return ctx;
   },
 });

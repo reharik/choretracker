@@ -116,6 +116,21 @@ export interface UpdateChoreInput {
   isActive?: boolean;
 }
 
+// ── Weekly Snapshot types ──
+
+export interface WeeklySnapshot {
+  id: string;
+  weekKey: string;
+  userId: string;
+  snapshotData: ChoreWeeklySummary;
+  paidAt: string;
+  createdAt: string;
+}
+
+export interface CreateSnapshotInput {
+  weekKey: string;
+}
+
 export interface CreateChoreExtraInput {
   name: string;
   value: number;
@@ -158,4 +173,5 @@ export interface ChoreWeeklySummary {
   completionRate: number;
   bonusActive: boolean;
   bonusSettings: BonusSettings;
+  isPaid?: boolean; // True if this week has been paid (snapshot exists)
 }
