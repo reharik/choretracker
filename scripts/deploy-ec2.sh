@@ -29,7 +29,7 @@ echo "Starting services via docker compose"
 docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml up -d
 
 echo "Running database migrations"
-docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml exec -T api sh -c "cd /app && npx knex --knexfile api/dist/knexfile.js migrate:latest"
+docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml exec -T api sh -c "cd /app/api/dist && npx knex --knexfile knexfile.js migrate:latest"
 
 echo "Running containers:"
 docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml ps

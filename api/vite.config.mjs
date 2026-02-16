@@ -15,14 +15,17 @@ export default defineConfig(({ mode }) => {
     plugins: [tsconfigPaths()],
     build: {
       outDir: 'dist',
-      emptyOutDir: true,
+      emptyOutDir: false, // Keep knexfile.js and db directory from build:knexfile
       ssr: true, // Server-side rendering mode for Node.js
       target: 'node22',
       format: 'esm',
       sourcemap: !isProduction, // Sourcemaps for development
       minify: isProduction, // Minify for production
       rollupOptions: {
-        input: join(__dirname, 'src/index.ts'),
+        input: {
+          index: join(__dirname, 'src/index.ts'),
+          knexfile: join(__dirname, 'src/knexfile.ts'),
+        },
         output: {
           entryFileNames: '[name].js',
           format: 'es',

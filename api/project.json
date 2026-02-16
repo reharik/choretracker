@@ -16,10 +16,19 @@
         "cwd": "{projectRoot}"
       }
     },
+    "build:knexfile": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist/db"],
+      "options": {
+        "commands": ["mkdir -p dist/db", "npx tsc -p tsconfig.db.json"],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
-      "dependsOn": ["ts-patch:install", "clean", "contracts:build"],
+      "dependsOn": ["ts-patch:install", "clean", "contracts:build", "build:knexfile"],
       "options": {
         "command": "vite build --config vite.config.mjs",
         "cwd": "{projectRoot}"
