@@ -69,7 +69,7 @@ const PasswordToggleButton = styled.button`
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.text};
   }
@@ -259,7 +259,9 @@ export const Login = () => {
                     autoComplete="current-password"
                     required
                     value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.target.value)
+                    }
                     placeholder="Enter your password"
                   />
                   <PasswordToggleButton

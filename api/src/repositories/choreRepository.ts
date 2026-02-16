@@ -150,15 +150,14 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
   getWeeklySummary: async (weekKey: string, userId?: string): Promise<ChoreWeeklySummary> => {
     // Check if there's a snapshot for this week (if userId provided)
     if (userId) {
-      const snapshot = await connection('weekly_snapshots')
-        .where({ userId, weekKey })
-        .first();
-      
+      const snapshot = await connection('weekly_snapshots').where({ userId, weekKey }).first();
+
       if (snapshot) {
         // Return snapshot data with isPaid flag
-        const data = typeof snapshot.snapshotData === 'string' 
-          ? JSON.parse(snapshot.snapshotData) 
-          : snapshot.snapshotData;
+        const data =
+          typeof snapshot.snapshotData === 'string'
+            ? JSON.parse(snapshot.snapshotData)
+            : snapshot.snapshotData;
         return { ...data, isPaid: true };
       }
     }
@@ -308,15 +307,16 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
 
   createSnapshot: async (userId: string, input: CreateSnapshotInput): Promise<WeeklySnapshot> => {
     const { weekKey } = input;
-    
+
     // Get the current weekly summary
-    const summary = await createChoreRepository({ connection, logger }).getWeeklySummary(weekKey, userId);
-    
+    const summary = await createChoreRepository({ connection, logger }).getWeeklySummary(
+      weekKey,
+      userId,
+    );
+
     // Check if snapshot already exists
-    const existing = await connection('weekly_snapshots')
-      .where({ userId, weekKey })
-      .first();
-    
+    const existing = await connection('weekly_snapshots').where({ userId, weekKey }).first();
+
     if (existing) {
       // Update existing snapshot
       const [updated] = await connection('weekly_snapshots')
@@ -326,15 +326,16 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
           paidAt: connection.fn.now(),
         })
         .returning('*');
-      
+
       return {
         ...updated,
-        snapshotData: typeof updated.snapshotData === 'string' 
-          ? JSON.parse(updated.snapshotData) 
-          : updated.snapshotData,
+        snapshotData:
+          typeof updated.snapshotData === 'string'
+            ? JSON.parse(updated.snapshotData)
+            : updated.snapshotData,
       };
     }
-    
+
     // Create new snapshot
     const [snapshot] = await connection('weekly_snapshots')
       .insert({
@@ -344,29 +345,29 @@ export const createChoreRepository = ({ connection, logger }: Container): ChoreR
         snapshotData: JSON.stringify(summary),
       })
       .returning('*');
-    
+
     return {
       ...snapshot,
-      snapshotData: typeof snapshot.snapshotData === 'string' 
-        ? JSON.parse(snapshot.snapshotData) 
-        : snapshot.snapshotData,
+      snapshotData:
+        typeof snapshot.snapshotData === 'string'
+          ? JSON.parse(snapshot.snapshotData)
+          : snapshot.snapshotData,
     };
   },
 
   getSnapshot: async (userId: string, weekKey: string): Promise<WeeklySnapshot | undefined> => {
-    const snapshot = await connection('weekly_snapshots')
-      .where({ userId, weekKey })
-      .first();
-    
+    const snapshot = await connection('weekly_snapshots').where({ userId, weekKey }).first();
+
     if (!snapshot) {
       return undefined;
     }
-    
+
     return {
       ...snapshot,
-      snapshotData: typeof snapshot.snapshotData === 'string' 
-        ? JSON.parse(snapshot.snapshotData) 
-        : snapshot.snapshotData,
+      snapshotData:
+        typeof snapshot.snapshotData === 'string'
+          ? JSON.parse(snapshot.snapshotData)
+          : snapshot.snapshotData,
     };
   },
 });

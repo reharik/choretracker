@@ -26,17 +26,17 @@ const FULL_DAYS = [
 function getCurrentWeekKey(): string {
   const now = new Date();
   const year = now.getFullYear();
-  
+
   // ISO week date: Week 1 is the week with the first Thursday
   const jan4 = new Date(year, 0, 4);
   const jan4Day = jan4.getDay() || 7; // Sunday = 7
   const week1Monday = new Date(jan4);
   week1Monday.setDate(jan4.getDate() - jan4Day + 1);
-  
+
   // Calculate current week number
   const daysDiff = Math.floor((now.getTime() - week1Monday.getTime()) / 86400000);
   const weekNum = Math.floor(daysDiff / 7) + 1;
-  
+
   return `${year}-W${String(weekNum).padStart(2, '0')}`;
 }
 
@@ -44,20 +44,20 @@ function getWeekLabel(weekKey: string): string {
   // Parse weekKey (e.g., "2026-W07")
   const [year, weekStr] = weekKey.split('-W');
   const weekNum = parseInt(weekStr, 10);
-  
+
   // ISO week date calculation: Week 1 is the week with the first Thursday of the year
   const jan4 = new Date(parseInt(year, 10), 0, 4);
   const jan4Day = jan4.getDay() || 7; // Sunday = 7
   const week1Monday = new Date(jan4);
   week1Monday.setDate(jan4.getDate() - jan4Day + 1);
-  
+
   // Calculate Monday of the target week
   const mon = new Date(week1Monday);
   mon.setDate(week1Monday.getDate() + (weekNum - 1) * 7);
-  
+
   const sun = new Date(mon);
   sun.setDate(mon.getDate() + 6);
-  
+
   const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
   return `${fmt(mon)} – ${fmt(sun)}`;
 }
@@ -66,27 +66,27 @@ function addWeeks(weekKey: string, weeks: number): string {
   // Parse weekKey (e.g., "2026-W07")
   const [year, weekStr] = weekKey.split('-W');
   const weekNum = parseInt(weekStr, 10);
-  
+
   // ISO week date calculation
   const jan4 = new Date(parseInt(year, 10), 0, 4);
   const jan4Day = jan4.getDay() || 7;
   const week1Monday = new Date(jan4);
   week1Monday.setDate(jan4.getDate() - jan4Day + 1);
-  
+
   // Calculate Monday of the target week
   const targetMonday = new Date(week1Monday);
-  targetMonday.setDate(week1Monday.getDate() + (weekNum - 1) * 7 + (weeks * 7));
-  
+  targetMonday.setDate(week1Monday.getDate() + (weekNum - 1) * 7 + weeks * 7);
+
   // Calculate new week number for the target date
   const targetYear = targetMonday.getFullYear();
   const targetJan4 = new Date(targetYear, 0, 4);
   const targetJan4Day = targetJan4.getDay() || 7;
   const targetWeek1Monday = new Date(targetJan4);
   targetWeek1Monday.setDate(targetJan4.getDate() - targetJan4Day + 1);
-  
+
   const daysDiff = Math.floor((targetMonday.getTime() - targetWeek1Monday.getTime()) / 86400000);
   const newWeekNum = Math.floor(daysDiff / 7) + 1;
-  
+
   return `${targetYear}-W${String(newWeekNum).padStart(2, '0')}`;
 }
 
@@ -332,7 +332,11 @@ export const Chores = () => {
     allChoresCompleteBonusPercent: 25,
   });
   const [editingChore, setEditingChore] = useState<string | null>(null);
-  const [editChoreData, setEditChoreData] = useState<{ name: string; baseValue: string; timesPerWeek: string }>({ name: '', baseValue: '', timesPerWeek: '' });
+  const [editChoreData, setEditChoreData] = useState<{
+    name: string;
+    baseValue: string;
+    timesPerWeek: string;
+  }>({ name: '', baseValue: '', timesPerWeek: '' });
   const [isPaid, setIsPaid] = useState(false);
 
   const isAdult = user?.role === 'adult';
@@ -433,7 +437,11 @@ export const Chores = () => {
   };
 
   const handleMarkAsPaid = async () => {
-    if (!window.confirm(`Mark week ${getWeekLabel(weekKey)} as paid? This will create a snapshot and freeze the data for this week.`)) {
+    if (
+      !window.confirm(
+        `Mark week ${getWeekLabel(weekKey)} as paid? This will create a snapshot and freeze the data for this week.`,
+      )
+    ) {
       return;
     }
     const result = await choreService.createSnapshot(weekKey);
