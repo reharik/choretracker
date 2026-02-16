@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
 
   // Default values for development
   const defaults = {
-    VITE_API: 'http://localhost:3000/api',
+    VITE_API: 'http://localhost:3001/api',
   };
 
   // Use env vars if available, otherwise fall back to defaults
