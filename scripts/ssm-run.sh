@@ -96,7 +96,7 @@ JSON
 
 _ssm_get_instance_ids() {
   local command_id="$1"
-  for _ in {1..30}; do
+  for _ in {1..90}; do
     local ids
     ids="$(
       aws ssm list-command-invocations \
