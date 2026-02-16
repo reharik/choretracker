@@ -1,0 +1,39 @@
+# Shared Caddyfile for Both Applications on Same EC2
+# This should be deployed to /opt/shared/Caddyfile on EC2
+# Run with: docker run -d --name shared-proxy --network host -v /opt/shared/Caddyfile:/etc/caddy/Caddyfile -v /opt/network/frontend:/srv/network -v /opt/chore-tracker/frontend:/srv/chore-tracker caddy:2-alpine
+
+# Network App - Main domain
+backintouch.net {
+  handle /api/* {
+    reverse_proxy localhost:3000 {
+      health_uri /health
+      health_interval 30s
+    }
+  }
+
+  handle {
+    root * /srv/network
+    file_server
+    try_files {path} /index.html
+  }
+}
+
+www.backintouch.net {
+  redir https://backintouch.net{uri} permanent
+}
+
+# ChoreTracker App - Subdomain
+chores.backintouch.net {
+  handle /api/* {
+    reverse_proxy localhost:3001 {
+      health_uri /health
+      health_interval 30s
+    }
+  }
+
+  handle {
+    root * /srv/chore-tracker
+    file_server
+    try_files {path} /index.html
+  }
+}

@@ -157,6 +157,15 @@ jobs:
           aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-${{ github.sha }}.tar.gz"
           aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-latest.tar.gz"
           aws s3 cp Caddyfile       "s3://${S3_BUCKET}/deployments/${APP_NAME}/Caddyfile"
+          aws s3 cp Caddyfile.shared "s3://${S3_BUCKET}/deployments/shared/Caddyfile" --acl private
+
+      - name: Deploy shared Caddyfile to EC2 (SSM)
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws s3 cp "s3://${S3_BUCKET}/deployments/shared/Caddyfile" /tmp/Caddyfile.shared
+          source scripts/ssm-run.sh
+          ssm_run "Deploy shared Caddyfile" "mkdir -p /opt/shared && aws s3 cp s3://${S3_BUCKET}/deployments/shared/Caddyfile /opt/shared/Caddyfile"
 
       - name: Deploy frontend on EC2 (SSM)
         shell: bash
@@ -164,3 +173,10 @@ jobs:
           set -euo pipefail
           source scripts/ssm-run.sh
           ssm_run "ChoreTracker: deploy frontend" scripts/remote/deploy-frontend.sh
+
+      - name: Setup shared proxy on EC2 (SSM)
+        shell: bash
+        run: |
+          set -euo pipefail
+          source scripts/ssm-run.sh
+          ssm_run "Setup shared Caddy proxy" scripts/remote/setup-shared-proxy.sh

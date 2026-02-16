@@ -43,22 +43,24 @@ services:
     networks:
       - chore-tracker-internal
 
-  proxy:
-    image: caddy:2-alpine
-    platform: linux/arm64
-    restart: unless-stopped
-    ports:
-      - '8080:80'
-      - '8443:443'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - ./frontend:/usr/share/caddy/html:ro
-    networks:
-      - chore-tracker-internal
-    depends_on:
-      - api
+  # Proxy is disabled in production - using shared-proxy container instead
+  # See scripts/remote/setup-shared-proxy.sh
+  # proxy:
+  #   image: caddy:2-alpine
+  #   platform: linux/arm64
+  #   restart: unless-stopped
+  #   ports:
+  #     - '8080:80'
+  #     - '8443:443'
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #     - ./frontend:/usr/share/caddy/html:ro
+  #   networks:
+  #     - chore-tracker-internal
+  #   depends_on:
+  #     - api
 
 volumes:
   pgdata_prod:

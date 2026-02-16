@@ -34,4 +34,7 @@ docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --pro
 echo "Running containers:"
 docker compose -p "${APP_NAME}" --env-file /opt/chore-tracker/env/prod.env --project-directory /opt/chore-tracker -f /opt/chore-tracker/docker-compose.prod.yml ps
 
+echo "Cleaning up old Docker images..."
+docker image prune -f
+
 echo "Deploy complete"
