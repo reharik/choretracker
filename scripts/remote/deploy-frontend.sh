@@ -15,15 +15,14 @@ mkdir -p /opt/chore-tracker/frontend
 tar -xzf /tmp/frontend.tar.gz -C /opt/chore-tracker/frontend
 rm -f /tmp/frontend.tar.gz
 
-: "${APP_NAME:=chore-tracker}"
+echo "Frontend files deployed to /opt/chore-tracker/frontend"
 
-cd /opt/chore-tracker
-
-# Ensure docker-compose.prod.yml exists (download if needed)
-if [ ! -f docker-compose.prod.yml ]; then
-  echo "docker-compose.prod.yml not found, downloading from S3..."
-  aws s3 cp "s3://${S3_BUCKET}/deployments/${APP_NAME}/docker-compose.prod.yml" docker-compose.prod.yml
+# Reload shared proxy if it exists (will be set up by setup-shared-proxy.sh)
+if docker ps --format '{{.Names}}' | grep -q '^shared-proxy$'; then
+  echo "Reloading shared proxy..."
+  docker exec shared-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile || echo "Note: Proxy reload failed, will be set up by setup-shared-proxy.sh"
+else
+  echo "Shared proxy not running yet, will be started by setup-shared-proxy.sh"
 fi
 
-docker compose -p "${APP_NAME}" -f docker-compose.prod.yml restart proxy
 echo "Frontend deployed."
