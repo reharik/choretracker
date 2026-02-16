@@ -27,7 +27,7 @@ env:
   S3_BUCKET: chore-tracker-deploy-ACCOUNT_ID-us-east-1
 
   # Tag targeting defaults (used by scripts/ssm-run.sh)
-  SSM_TAG_APP: chore-tracker
+  SSM_TAG_HOST: prod-shared
   SSM_TAG_ENV: prod
 
   # Keep waits bounded (2s * 120 = ~4 minutes per instance)

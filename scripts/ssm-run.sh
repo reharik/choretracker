@@ -18,9 +18,9 @@ set -euo pipefail
 #   SSM_POLL_MAX_ATTEMPTS  (default 180)
 
 _ssm_default_targets() {
-  local app="${SSM_TAG_APP:-chore-tracker}"
+  local host="${SSM_TAG_HOST:-prod-shared}"
   local env="${SSM_TAG_ENV:-prod}"
-  echo "Key=tag:App,Values=${app}" "Key=tag:Env,Values=${env}"
+  echo "Key=tag:Host,Values=${host}" "Key=tag:Env,Values=${env}"
 }
 
 _ssm_poll_delay() { echo "${SSM_POLL_DELAY_SECONDS:-2}"; }
