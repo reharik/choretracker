@@ -22,17 +22,18 @@ export const registerModulesFromGlob = async (
   container: AwilixContainer,
   logger: LoggerInterface,
 ): Promise<void> => {
-  // import.meta.glob is a Vite build-time feature - only exists in bundled output
-  // When running source directly (tsx/ts-node), we must use runtime file scanning
-  const hasViteGlob = typeof import.meta.glob === 'function';
+  // In production, Vite transforms import.meta.glob into a static object at build time
+  // So we can't check if import.meta.glob is a function - it won't exist after bundling
+  // Instead, just check if we're in production mode
+  const isProduction = config.nodeEnv === 'production';
 
   logger.info('[loadModules] Starting module registration', {
     nodeEnv: config.nodeEnv,
-    hasViteGlob,
+    isProduction,
     currentDir: currentDir,
   });
 
-  if (config.nodeEnv === 'production' && hasViteGlob) {
+  if (isProduction) {
     // Production bundle: try Vite's import.meta.glob first (transformed at build time)
     try {
       registerForProduction(container, logger);

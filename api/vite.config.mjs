@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
         input: {
           index: join(__dirname, 'src/index.ts'),
           knexfile: join(__dirname, 'src/knexfile.ts'),
+          koaServer: join(__dirname, 'src/koaServer.ts'),
         },
         output: {
           entryFileNames: '[name].js',
