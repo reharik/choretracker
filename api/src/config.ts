@@ -24,8 +24,8 @@ export type Config = {
   // JWT configuration
   jwtSecret: string;
   jwtExpiresIn: string;
-  // CORS configuration
-  corsOrigin: string;
+  // CORS configuration (comma-separated origins in env, stored as array)
+  corsOrigins: string[];
   // Server configuration
   serverPort: number;
   // Logging configuration
@@ -74,8 +74,11 @@ export const setupConfig = (): Config => {
     // JWT configuration
     jwtSecret: process.env.JWT_SECRET || 'your-secret-key-here',
     jwtExpiresIn: '30d', // 30 days sliding scale
-    // CORS configuration
-    corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    // CORS configuration (comma-separated: https://chores.backintouch.net,https://backintouch.net)
+    corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
     // Server configuration
     serverPort: Number(process.env.PORT || 3000),
     // Logging configuration

@@ -27,7 +27,13 @@ export const createKoaServer = ({ routes, optionalAuthMiddleware, logger }: Cont
   // 3. CORS (before body parsing)
   app.use(
     cors({
-      origin: config.corsOrigin,
+      origin: (ctx) => {
+        const requestOrigin = ctx.get('Origin');
+        if (!requestOrigin) return config.corsOrigins[0] ?? '*';
+        if (config.corsOrigins.includes(requestOrigin)) return requestOrigin;
+        if (config.corsOrigins.includes('*')) return '*';
+        return false;
+      },
       credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

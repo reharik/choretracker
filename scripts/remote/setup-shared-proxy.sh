@@ -60,11 +60,20 @@ if docker ps --format '{{.Names}}' | grep -q 'chore-tracker.*proxy'; then
   fi
 fi
 
-# Reload Caddyfile if proxy is running
+# Restart proxy to ensure volume mounts are correct
 if docker ps --format '{{.Names}}' | grep -q '^shared-proxy$'; then
+  echo "Restarting shared proxy to refresh volume mounts..."
+  docker restart shared-proxy
+  sleep 2
   echo "Reloading Caddyfile..."
   docker exec shared-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile || true
 fi
 
 echo "Shared proxy setup complete"
 docker ps --filter "name=shared-proxy" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Verify mounts
+echo ""
+echo "Verifying volume mounts:"
+docker exec shared-proxy ls -la /srv/network/ | head -3 || echo "✗ Network frontend not mounted"
+docker exec shared-proxy ls -la /srv/chore-tracker/ | head -3 || echo "✗ ChoreTracker frontend not mounted"
