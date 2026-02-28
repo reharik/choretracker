@@ -1,0 +1,44 @@
+# Shared Caddyfile – all known apps on this EC2 (infra)
+# Single source of truth. Deploy uploads this file to S3 deployments/shared/Caddyfile.
+# To add an app: add a server block below (domain, reverse_proxy port, root path).
+
+# App 1 - Main domain
+backintouch.net {
+	handle /api/* {
+		reverse_proxy localhost:3000 {
+			health_uri /health
+			health_interval 30s
+		}
+	}
+
+	handle {
+		root * /srv/network
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+www.backintouch.net {
+	redir https://backintouch.net{uri} permanent
+}
+
+# App 2 - Subdomain
+chores.backintouch.net {
+	handle /api/* {
+		reverse_proxy localhost:3001 {
+			health_uri /health
+			health_interval 30s
+		}
+	}
+
+	handle {
+		root * /srv/chore-tracker
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Fallback for IP access (HTTP only)
+:80 {
+	respond "Please use configured domain names"
+}
