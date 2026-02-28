@@ -1,4 +1,4 @@
-name: Deploy to EC2 (SSM + S3 + OIDC)
+name: Deploy
 
 on:
   push:
@@ -6,192 +6,18 @@ on:
   workflow_dispatch:
     inputs:
       deploy_backend:
-        description: "Deploy backend"
-        required: false
-        default: true
         type: boolean
+        default: true
       deploy_frontend:
-        description: "Deploy frontend"
-        required: false
-        default: true
         type: boolean
-
+        default: true
 permissions:
   contents: read
-  actions: write
   id-token: write
-
-env:
-  AWS_REGION: us-east-1
-  # Update this with your S3 bucket name
-  S3_BUCKET: network-deploy-709865789463-us-east-1
-  APP_NAME: chore-tracker
-
-
-  # Tag targeting defaults (used by scripts/ssm-run.sh)
-  SSM_TAG_HOST: prod-shared
-  SSM_TAG_ENV: prod
-
-  # Keep waits bounded (2s * 120 = ~4 minutes per instance)
-  SSM_WAIT_DELAY: "2"
-  SSM_WAIT_MAX_ATTEMPTS: "120"
-
 jobs:
-  deploy-backend:
-    name: Deploy backend
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || github.event.inputs.deploy_backend == 'true' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image for ARM64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: api/Dockerfile
-          target: production
-          platforms: linux/arm64
-          tags: |
-            chore-tracker-api:${{ github.sha }}
-            chore-tracker-api:latest
-          load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false
-
-      - name: Save Docker image
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker save chore-tracker-api:${{ github.sha }} chore-tracker-api:latest | gzip > chore-tracker-api-image.tar.gz
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GitHubActions-Deploy-Backend
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
-      - name: Check if backend already deployed
-        id: check-backend
-        shell: bash
-        run: |
-          if aws s3 ls "s3://${S3_BUCKET}/deployments/${APP_NAME}/chore-tracker-api-${{ github.sha }}.tar.gz" 2>/dev/null; then
-            echo "Backend image for SHA ${{ github.sha }} already exists in S3"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "Backend image not found, will deploy"
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Upload backend artifacts to S3
-        if: steps.check-backend.outputs.skip != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/chore-tracker-api-${{ github.sha }}.tar.gz"
-          aws s3 cp chore-tracker-api-image.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/chore-tracker-api-latest.tar.gz"
-          aws s3 cp docker-compose.prod.yml     "s3://${S3_BUCKET}/deployments/${APP_NAME}/docker-compose.prod.yml"
-          aws s3 cp scripts/deploy-ec2.sh       "s3://${S3_BUCKET}/deployments/${APP_NAME}/deploy-ec2.sh"
-
-      - name: Download backend artifacts on EC2 (SSM)
-        if: steps.check-backend.outputs.skip != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "ChoreTracker: download backend artifacts" scripts/remote/download-backend.sh
-
-      - name: Deploy backend on EC2 (SSM)
-        if: steps.check-backend.outputs.skip != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "ChoreTracker: deploy backend" scripts/remote/deploy-backend.sh
-
-      - name: Verify backend on EC2 (SSM)
-        if: steps.check-backend.outputs.skip != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "ChoreTracker: verify backend health" scripts/remote/verify-backend.sh
-
-  deploy-frontend:
-    name: Deploy frontend
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || github.event.inputs.deploy_frontend == 'true' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend
-        run: npm run build:web:production
-        env:
-          VITE_API: /api
-
-      - name: Package frontend
-        shell: bash
-        run: |
-          set -euo pipefail
-          tar -czf frontend.tar.gz -C web/dist .
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GitHubActions-Deploy-Frontend
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
-      - name: Upload frontend artifacts to S3
-        shell: bash
-        run: |
-          set -euo pipefail
-          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-${{ github.sha }}.tar.gz"
-          aws s3 cp frontend.tar.gz "s3://${S3_BUCKET}/deployments/${APP_NAME}/frontend-latest.tar.gz"
-          aws s3 cp Caddyfile       "s3://${S3_BUCKET}/deployments/${APP_NAME}/Caddyfile"
-          aws s3 cp Caddyfile.shared "s3://${S3_BUCKET}/deployments/shared/Caddyfile" --acl private
-
-      - name: Deploy shared Caddyfile to EC2 (SSM)
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "Deploy shared Caddyfile" scripts/remote/deploy-shared-caddyfile.sh
-
-      - name: Deploy frontend on EC2 (SSM)
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "ChoreTracker: deploy frontend" scripts/remote/deploy-frontend.sh
-
-      - name: Setup shared proxy on EC2 (SSM)
-        shell: bash
-        run: |
-          set -euo pipefail
-          source scripts/ssm-run.sh
-          ssm_run "Setup shared Caddy proxy" scripts/remote/setup-shared-proxy.sh
+  deploy:
+    uses: reharik/cannibal-infra/.github/workflows/deploy-ec2.yml@main
+    with:
+      deploy_backend: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_backend || true }}
+      deploy_frontend: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_frontend || true }}
+    secrets: inherit

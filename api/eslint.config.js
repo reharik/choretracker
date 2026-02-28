@@ -1,5 +1,6 @@
-import { createBaseTypeScriptConfig } from '../eslint-shared.js';
+import { createBaseTypeScriptConfig } from '../../infra/config/eslint/eslint-shared.js';
 
 export default await createBaseTypeScriptConfig({
-  ignores: ['**/db/**', '**/_original/**'],
+  tsconfigRootDir: import.meta.dirname,
+  ignores: ['**/db/**'],
 });

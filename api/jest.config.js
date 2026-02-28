@@ -1,6 +1,6 @@
 export default {
   displayName: 'api',
-  preset: '../jest.preset.cjs',
+  preset: '../../infra/config/jest/jest.preset.cjs',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
@@ -19,8 +19,10 @@ export default {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^./knexfile$': '<rootDir>/src/tests/__mocks__/knexfile.js',
   },
   coverageDirectory: '<rootDir>/coverage',
+  setupFiles: ['<rootDir>/src/tests/setup.ts'],
   testMatch: ['**/tests/**/*.tests.ts', '**/?(*.)+(spec|test).?([mc])[jt]s?(x)'],
-  transformIgnorePatterns: ['node_modules/(?!(smart-enums|case-anything|@chore-tracker)/)'],
+  transformIgnorePatterns: ['node_modules/(?!(smart-enums|case-anything|@network)/)'],
 };

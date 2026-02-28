@@ -1,64 +1,42 @@
-.PHONY: help build up down logs clean dev-up dev-down dev-logs db-migrate db-migrate-dev db-seed db-seed-dev
+APP_NAME := network
+ENV_NAME ?= dev
+COMPOSE_PROJECT_NAME := $(APP_NAME)-$(ENV_NAME)
 
-help:
-	@echo "ChoreTracker Docker Commands"
-	@echo "============================"
-	@echo "Production:"
-	@echo "  make build        - Build production images"
-	@echo "  make up           - Start production containers"
-	@echo "  make down         - Stop production containers"
-	@echo "  make logs         - View production logs"
-	@echo "  make db-migrate   - Run migrations in production container"
-	@echo "  make db-seed      - Run seeds in production container"
-	@echo ""
-	@echo "Development:"
-	@echo "  make dev-up       - Start development containers"
-	@echo "  make dev-down     - Stop development containers"
-	@echo "  make dev-logs     - View development logs"
-	@echo "  make db-migrate-dev - Run migrations in dev container"
-	@echo "  make db-seed-dev  - Run seeds in dev container"
-	@echo ""
-	@echo "Maintenance:"
-	@echo "  make clean        - Remove all containers and volumes"
+BASE_FILES := -f infra/config/docker-compose/base.yml
 
-# Production commands
-build:
-	docker compose -f docker-compose.yml build
+DEV_FILES := \
+	-f infra/config/docker-compose/dev.yml \
+	-f docker-compose/docker-compose.dev.yml
 
-up:
-	docker compose -f docker-compose.yml up
+LOCAL_PROD_FILES := \
+	-f infra/config/docker-compose/dev.yml \
+	-f docker-compose/docker-compose-local-prod.yml \
+	-f docker-compose/docker-compose.dev.yml
 
-down:
-	docker compose -f docker-compose.yml down
+PROD_FILES := \
+	-f infra/config/docker-compose/prod.yml
 
-logs:
-	docker compose -f docker-compose.yml logs -f
+define compose_dev
+APP_NAME=$(APP_NAME) \
+COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
+docker compose $(BASE_FILES) $(DEV_FILES)
+endef
 
-# Development commands
-dev-up:
-	docker compose -f docker-compose-dev.yml up
+define compose_local_prod
+APP_NAME=$(APP_NAME) \
+COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
+docker compose $(BASE_FILES) $(LOCAL_PROD_FILES)
+endef
 
-dev-down:
-	docker compose -f docker-compose-dev.yml down
+docker/up/dev:
+	$(compose_dev) up --build;
 
-dev-logs:
-	docker compose -f docker-compose-dev.yml logs -f
+docker/down/dev:
+	$(compose_dev) down --rmi local --remove-orphans --volumes
 
-# Database commands (Production)
-db-migrate:
-	docker compose -f docker-compose.yml exec api npm run db:migrate
+docker/up/local-prod:
+	$(compose_local_prod) up --build;
 
-db-seed:
-	docker compose -f docker-compose.yml exec api npm run db:seed
 
-# Database commands (Development)
-db-migrate-dev:
-	docker compose -f docker-compose-dev.yml exec api npm run db:migrate
-
-db-seed-dev:
-	docker compose -f docker-compose-dev.yml exec api npm run db:seed
-
-# Maintenance
-clean:
-	docker compose -f docker-compose.yml down -v
-	docker compose -f docker-compose-dev.yml down -v
+docker/down/local-prod:
+	$(compose_local_prod) down --rmi local --remove-orphans --volumes
