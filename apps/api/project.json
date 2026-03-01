@@ -32,6 +32,7 @@
         "ts-patch:install",
         "clean",
         "contracts:build",
+        "gen:container",
         "build:knexfile"
       ],
       "options": {
@@ -80,6 +81,14 @@
       "options": {
         "command": "prettier --write {projectRoot}/src/**/*.{ts,tsx,js,jsx,json}"
       }
+    }
+  },
+  "gen:container": {
+    "executor": "nx:run-commands",
+    "dependsOn": ["contracts:build"],
+    "options": {
+      "command": "tsx src/codeGen/gen-awilix-container.ts",
+      "cwd": "{projectRoot}"
     }
   },
   "tags": ["type:app"]

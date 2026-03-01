@@ -1,3 +1,4 @@
+import { RESOLVER } from "awilix";
 import { Context, Next } from "koa";
 import type { LoggerInterface } from "../logger";
 
@@ -23,3 +24,6 @@ export const createRequestLogger =
       duration: `${duration}ms`,
     });
   };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+(createRequestLogger as any)[RESOLVER] = {};

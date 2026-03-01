@@ -1,3 +1,4 @@
+import { RESOLVER } from "awilix";
 import { Context, HttpError, Next } from "koa";
 import type { LoggerInterface } from "../logger";
 
@@ -29,3 +30,6 @@ export const createErrorHandler =
       ctx.app.emit("error", err, ctx);
     }
   };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+(createErrorHandler as any)[RESOLVER] = {};

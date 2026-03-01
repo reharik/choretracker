@@ -17,6 +17,7 @@
     "db:rollback": "NODE_OPTIONS=--import=tsx npx knex --knexfile src/knexfile.ts migrate:rollback",
     "db:seed:local": "NODE_OPTIONS=--import=tsx npx knex --knexfile src/knexfile.ts seed:run",
     "dev": "nodemon",
+    "gen:container": "rimraf src/di/awilix.autoload.d.ts && tsx src/codeGen/gen-awilix-container.ts",
     "lint": "nx run api:lint",
     "serve": "nx serve api",
     "start": "node dist/index.js",
