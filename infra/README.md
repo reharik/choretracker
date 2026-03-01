@@ -10,22 +10,22 @@ This directory is a **staging extract** of shared infrastructure, tooling, and c
 
 ## Layout (maps to `/infra` in app repos)
 
-| Path in this extract     | Purpose |
-|--------------------------|--------|
-| `README.md`              | This file |
-| `docs/subtree.md`        | How to add/update the subtree in app repos |
-| `docs/deploy.md`         | Generic deploy flow (EC2, SSM, S3, Caddy) |
-| `scripts/deploy/`        | Deploy entrypoints and helpers (e.g. deploy-ec2.sh, ssm-run.sh) |
-| `scripts/ci/`            | CI helper scripts (if any) |
-| `scripts/local/`         | Local/dev scripts (e.g. verify-dns-and-frontend) |
-| `github/workflows/`      | Reusable or template GitHub Actions workflows |
-| `config/tsconfig/`       | Base tsconfig for TypeScript |
-| `config/eslint/`         | Shared ESLint base config |
-| `config/prettier/`       | Prettier config and ignore |
-| `config/jest/`           | Shared Jest preset (Nx); app projects extend it |
-| `config/nx/`             | Optional Nx base config (see manifest) |
-| `templates/app/`         | App-agnostic templates (e.g. shared Caddyfile, Dockerfile, docker-compose, .dockerignore) |
-| `manifest.json`          | Inventory: what was copied, what stayed in app, TODOs, risks |
+| Path in this extract | Purpose                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| `README.md`          | This file                                                                                 |
+| `docs/subtree.md`    | How to add/update the subtree in app repos                                                |
+| `docs/deploy.md`     | Generic deploy flow (EC2, SSM, S3, Caddy)                                                 |
+| `scripts/deploy/`    | Deploy entrypoints and helpers (e.g. deploy-ec2.sh, ssm-run.sh)                           |
+| `scripts/ci/`        | CI helper scripts (if any)                                                                |
+| `scripts/local/`     | Local/dev scripts (e.g. verify-dns-and-frontend)                                          |
+| `github/workflows/`  | Reusable or template GitHub Actions workflows                                             |
+| `config/tsconfig/`   | Base tsconfig for TypeScript                                                              |
+| `config/eslint/`     | Shared ESLint base config                                                                 |
+| `config/prettier/`   | Prettier config and ignore                                                                |
+| `config/jest/`       | Shared Jest preset (Nx); app projects extend it                                           |
+| `config/nx/`         | Optional Nx base config (see manifest)                                                    |
+| `templates/app/`     | App-agnostic templates (e.g. shared Caddyfile, Dockerfile, docker-compose, .dockerignore) |
+| `manifest.json`      | Inventory: what was copied, what stayed in app, TODOs, risks                              |
 
 ## Usage after subtree
 

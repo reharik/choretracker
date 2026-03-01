@@ -2,21 +2,16 @@ services:
   api:
     build:
       context: .
-      dockerfile: infra/docker/node-nx-api/Dockerfile
+      dockerfile: infra/docker/api/Dockerfile
       target: dev
       args:
-        NODE_VERSION: '22'
-        API_WORKSPACE_PATH: 'apps/api'
-        NX_PROJECT: 'api'
-        DEV_WORKSPACE: '@app/api'
-        NODE_ENTRYPOINT: 'apps/api/dist/index.js'
-    env_file:
-      - ./apps/api/.env
+        NODE_VERSION: "22"
+        API_WORKSPACE_PATH: "apps/api"
+        NX_PROJECT: "api"
+        DEV_WORKSPACE: "@app/api"
+        NODE_ENTRYPOINT: "apps/api/dist/index.js"
+
     volumes:
       - ./apps/api:/app/apps/api
       - /app/apps/api/node_modules
       - ./packages:/app/packages
-
-  db:
-    env_file:
-      - ./apps/api/.env

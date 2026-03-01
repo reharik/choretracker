@@ -4,25 +4,26 @@
 # Include only what we need for the API
 !package.json
 !package-lock.json
-!api/
-!contracts/
+!apps/
+!packages/
+!infra/
 !nx.json
 !tsconfig.json
 !jest.preset.js
 !eslint-shared.js
 
 # Exclude unnecessary files from included directories
-api/dist/
-api/node_modules/
-api/.env
-api/*.log
-api/coverage/
+apps/api/dist/
+apps/api/node_modules/
+apps/api/.env
+apps/api/*.log
+apps/api/coverage/
 
-contracts/dist/
-contracts/node_modules/
+packages/contracts/dist/
+packages/contracts/node_modules/
 
 # Exclude other apps
-web/
+apps/web/
 
 # Exclude development files
 .git/

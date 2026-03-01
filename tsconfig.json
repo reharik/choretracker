@@ -1,0 +1,12 @@
+{
+  "extends": "./infra/config/tsconfig/tsconfig.typia.json",
+  "files": [],
+  "include": ["types/**/*.d.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/contracts": ["packages/contracts/dist/src/index.d.ts"],
+      "@app/contracts/*": ["packages/contracts/dist/src/*.d.ts"]
+    }
+  }
+}

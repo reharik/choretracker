@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "api",
-    "web",
-    "contracts"
+    "apps/api",
+    "apps/web",
+    "packages/contracts"
   ],
   "scripts": {
     "build": "nx run-many -t build",

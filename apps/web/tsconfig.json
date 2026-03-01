@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "outDir": "./dist",
+    "noEmit": true,
+    "types": ["vite/client", "jest", "node", "typia"],
+    "plugins": [
+      {
+        "transform": "typia/lib/transform"
+      }
+    ],
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "strict": true
+  },
+  "include": ["src", "src/**/*.d.ts"],
+  "exclude": ["dist", "node_modules"]
+}

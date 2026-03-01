@@ -1,0 +1,86 @@
+{
+  "name": "api",
+  "projectType": "application",
+  "sourceRoot": "{projectRoot}/src",
+  "targets": {
+    "ts-patch:install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node -e \"try { require('child_process').execSync('ts-patch install', {stdio: 'ignore'}); } catch(e) {}\""
+      }
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx rimraf dist",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build:knexfile": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist/db"],
+      "options": {
+        "commands": ["mkdir -p dist/db", "npx tsc -p tsconfig.db.json"],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": [
+        "ts-patch:install",
+        "clean",
+        "contracts:build",
+        "build:knexfile"
+      ],
+      "options": {
+        "command": "vite build --config vite.config.mjs",
+        "cwd": "{projectRoot}"
+      },
+      "configurations": {
+        "development": {
+          "command": "vite build --config vite.config.mjs --mode development"
+        },
+        "production": {
+          "command": "vite build --config vite.config.mjs --mode production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "api:build:development",
+        "watch": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["{projectRoot}/**/*.{ts,tsx,js,mjs,cjs}"],
+        "forceColor": true,
+        "fix": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js --passWithNoTests",
+        "cwd": "{projectRoot}"
+      },
+      "configurations": {
+        "runInBand": {
+          "command": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.config.js --runInBand --passWithNoTests"
+        }
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write {projectRoot}/src/**/*.{ts,tsx,js,jsx,json}"
+      }
+    }
+  },
+  "tags": ["type:app"]
+}

@@ -14,7 +14,15 @@
     "nodeEntrypoint": "apps/api/dist/index.js"
   },
   "requiredSecrets": {
-    "backendDeploy": ["AWS_ROLE_ARN", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"],
-    "frontendBuild": ["VITE_DEFAULT_INTERVAL_DAYS", "VITE_DEFAULT_CONTACT_MESSAGE"]
+    "backendDeploy": [
+      "AWS_ROLE_ARN",
+      "POSTGRES_USER",
+      "POSTGRES_PASSWORD",
+      "POSTGRES_DB"
+    ],
+    "frontendBuild": [
+      "VITE_DEFAULT_INTERVAL_DAYS",
+      "VITE_DEFAULT_CONTACT_MESSAGE"
+    ]
   }
 }
