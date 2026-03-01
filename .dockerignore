@@ -4,13 +4,21 @@
 # Include only what we need for the API
 !package.json
 !package-lock.json
-!apps/
-!packages/
-!infra/
+!apps/api/
+!packages/contracts/
 !nx.json
 !tsconfig.json
 !jest.preset.js
 !eslint-shared.js
+# nx.json extends ./infra/config/nx/nx.json; tsconfig extends infra/config/tsconfig (need parents un-excluded)
+!infra
+infra/*
+!infra/config
+infra/config/*
+!infra/config/nx
+!infra/config/nx/**
+!infra/config/tsconfig
+!infra/config/tsconfig/**
 
 # Exclude unnecessary files from included directories
 apps/api/dist/
@@ -24,6 +32,9 @@ packages/contracts/node_modules/
 
 # Exclude other apps
 apps/web/
+
+# Exclude other packages
+packages/eslint-config/
 
 # Exclude development files
 .git/
