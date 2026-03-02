@@ -92,7 +92,7 @@ RUN (test -d node_modules/dotenv || \
     echo "✓ dotenv verified in node_modules"
 
 EXPOSE 3000
-CMD ["node", "apps/api/dist/index.js"]
+CMD ["sh", "apps/api/dist/scripts/serverStartUpProd.sh"]
 
 FROM production AS staging
 ENV NODE_ENV=staging
