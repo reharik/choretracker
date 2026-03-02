@@ -32,8 +32,6 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
-    ports:
-      - "3000:3000"
 
 volumes:
   localstack_data:
