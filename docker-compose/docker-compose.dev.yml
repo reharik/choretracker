@@ -15,12 +15,20 @@ services:
         NODE_ENTRYPOINT: "apps/api/dist/index.js"
     env_file:
       - ./apps/api/.env
+    # Override .env so container talks to db service on internal port (5432), not host-mapped 5433
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
     volumes:
       - ./apps/api:/app/apps/api
       - /app/apps/api/node_modules
       - ./packages:/app/packages
       - ~/.aws:/root/.aws:ro
+    command: ["sh", "apps/api/src/scripts/serverStartUpDev.sh"]
 
   db:
+    # Replace default 5432:5432 so we don't conflict with another Postgres (e.g. network app)
+    ports: !override
+      - "5433:5432"
     env_file:
       - ./apps/api/.env
