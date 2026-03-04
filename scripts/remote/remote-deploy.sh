@@ -175,9 +175,9 @@ if [[ ${#ENV_ARGS[@]} -gt 0 ]]; then
 fi
 
 if docker compose version >/dev/null 2>&1; then
-  sudo docker compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
+  sudo -E docker compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
 else
-  sudo docker-compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
+  sudo -E docker-compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
 fi
 
 echo "Remote deploy complete"
