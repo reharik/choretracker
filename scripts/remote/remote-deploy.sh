@@ -181,4 +181,4 @@ else
 fi
 
 echo "Remote deploy complete"
-rm -rf "${WORK_DIR}" || true
+trap 'rm -rf "$WORK_DIR"' EXIT
