@@ -24,6 +24,11 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           index: join(__dirname, "src/index.ts"),
+          "scripts/runMigrations": join(
+            __dirname,
+            "src/scripts/runMigrations.ts",
+          ),
+          "scripts/runSeeds": join(__dirname, "src/scripts/runSeeds.ts"),
           knexfile: join(__dirname, "src/knexfile.ts"),
           koaServer: join(__dirname, "src/koaServer.ts"),
         },
