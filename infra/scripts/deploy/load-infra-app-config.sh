@@ -5,14 +5,20 @@ log() { echo "$@" >&2; }  # stderr logger
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd "${INFRA_ROOT}/.." && pwd)"
+
 DEFAULTS="${INFRA_ROOT}/config/infra.app.config.defaults.json"
-CONSUMER="${1:-infra.app.config.json}"
+CONSUMER_DEFAULT="${REPO_ROOT}/infra.app.config.json"
+CONSUMER="${1:-$CONSUMER_DEFAULT}"
 
 if [[ ! -f "$DEFAULTS" ]]; then
   echo "Defaults not found: $DEFAULTS" >&2
   exit 1
 fi
 
+log "cwd: $(pwd)"
+log "defaults: $DEFAULTS"
+log "consumer:  $CONSUMER"
 log "defaults type: $(jq -r type "$DEFAULTS")"
 [[ -f "$CONSUMER" ]] && log "consumer type: $(jq -r type "$CONSUMER")"
 
@@ -20,6 +26,7 @@ log "defaults type: $(jq -r type "$DEFAULTS")"
 if [[ -f "$CONSUMER" ]]; then
   MERGED=$(jq -s '.[0] * .[1]' "$DEFAULTS" "$CONSUMER")
 else
+  log "consumer config not found; using defaults only"
   MERGED=$(jq . "$DEFAULTS")
 fi
 
