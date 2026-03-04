@@ -138,7 +138,12 @@ fi
 # ------------------------------------------------------------------------------
 if [[ "${DEPLOY_BACKEND}" == "true" ]]; then
   if download_if_exists "${BACKEND_TAR}" "${WORK_DIR}/${BACKEND_TAR}"; then
+    # echo "Loading backend image from ${BACKEND_TAR}"
+    # gunzip -c "${WORK_DIR}/${BACKEND_TAR}" | sudo docker load
     echo "Loading backend image from ${BACKEND_TAR}"
+    ls -lh "${WORK_DIR}/${BACKEND_TAR}"
+    file "${WORK_DIR}/${BACKEND_TAR}" || true
+    gunzip -t "${WORK_DIR}/${BACKEND_TAR}"   # validates gzip without output
     gunzip -c "${WORK_DIR}/${BACKEND_TAR}" | sudo docker load
   else
     echo "No backend artifact (${BACKEND_TAR}) found; skipping backend load"

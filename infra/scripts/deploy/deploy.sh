@@ -13,7 +13,11 @@ Requires:
   - SSM target selection via env (tags) or explicit instance id handled by ssm-run.sh
 EOF
 }
-
+echo "========================"
+echo "deploy.sh"
+echo "========================"
+echo "APP_NAME: $APP_NAME"
+echo "========================"
 APP_NAME=""
 ENV=""
 SHA=""
@@ -21,7 +25,11 @@ AWS_REGION="${AWS_REGION:-us-east-1}"
 S3_BUCKET="${S3_BUCKET:-}"
 DEPLOY_BACKEND="true"
 DEPLOY_FRONTEND="true"
-
+echo "========================"
+echo "deploy.sh"
+echo "========================"
+echo "APP_NAME: $APP_NAME"
+echo "========================"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --app) APP_NAME="$2"; shift 2;;
@@ -35,7 +43,11 @@ while [[ $# -gt 0 ]]; do
     *) echo "Unknown arg: $1"; usage; exit 2;;
   esac
 done
-
+echo "========================"
+echo "deploy.sh"
+echo "========================"
+echo "APP_NAME: $APP_NAME"
+echo "========================"
 [[ -n "$APP_NAME" && -n "$ENV" && -n "$SHA" ]] || { usage; exit 2; }
 [[ -n "$S3_BUCKET" ]] || { echo "Missing S3_BUCKET (pass --bucket or set env)"; exit 2; }
 
