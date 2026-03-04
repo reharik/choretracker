@@ -99,7 +99,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Load infra app config
         shell: bash
-        run: ./infra/scripts/deploy/load-infra-app-config.sh >> "$GITHUB_ENV"
+        run: |
+          set -euo pipefail
+          # ./infra/scripts/deploy/load-infra-app-config.sh >> "$GITHUB_ENV"
+          ./infra/scripts/deploy/load-infra-app-config.sh | tee -a "$GITHUB_ENV"
+          echo "DEBUG: APP_NAME from GITHUB_ENV is: $(grep '^APP_NAME=' "$GITHUB_ENV" | tail -n1)"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
