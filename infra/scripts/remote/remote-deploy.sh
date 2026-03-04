@@ -175,6 +175,9 @@ fi
 echo "docker compose up"
 echo "  project=${COMPOSE_PROJECT_NAME}"
 echo "  files=${COMPOSE_FILES[*]}"
+echo "========================"
+echo "  app_name=${APP_NAME}"
+echo "========================"
 if [[ ${#ENV_ARGS[@]} -gt 0 ]]; then
   echo "  env_args=${ENV_ARGS[*]}"
 fi
