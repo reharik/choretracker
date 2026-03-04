@@ -191,6 +191,52 @@ ssm_run() {
     [[ "$final_status" == "Success" ]] || failed=1
   done
 
-  [[ "$failed" -eq 0 ]]
-}
-export -f ssm_run
+# ------------------------------------------------------------------------------
+# Backend: load docker image from tar.gz (if present)
+# ------------------------------------------------------------------------------
+if [[ "${DEPLOY_BACKEND}" == "true" ]]; then
+  if download_if_exists "${BACKEND_TAR}" "${WORK_DIR}/${BACKEND_TAR}"; then
+    echo "Loading backend image from ${BACKEND_TAR}"
+    gunzip -c "${WORK_DIR}/${BACKEND_TAR}" | sudo docker load
+  else
+    echo "No backend artifact (${BACKEND_TAR}) found; skipping backend load"
+  fi
+fi
+
+# ------------------------------------------------------------------------------
+# Frontend: extract tarball into frontend dir (if present)
+# ------------------------------------------------------------------------------
+if [[ "${DEPLOY_FRONTEND}" == "true" ]]; then
+  if download_if_exists "${FRONTEND_TAR}" "${WORK_DIR}/${FRONTEND_TAR}"; then
+    echo "Deploying frontend to ${FRONTEND_DIR}"
+    sudo mkdir -p "${FRONTEND_DIR}"
+    sudo find "${FRONTEND_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+    sudo tar -xzf "${WORK_DIR}/${FRONTEND_TAR}" -C "${FRONTEND_DIR}"
+  else
+    echo "No frontend artifact (${FRONTEND_TAR}) found; skipping frontend deploy"
+  fi
+fi
+
+# ------------------------------------------------------------------------------
+# Compose up
+# ------------------------------------------------------------------------------
+ENV_ARGS=()
+if [[ -f "${ENV_FILE}" ]]; then
+  ENV_ARGS+=( --env-file "${ENV_FILE}" )
+fi
+
+echo "docker compose up"
+echo "  project=${COMPOSE_PROJECT_NAME}"
+echo "  files=${COMPOSE_FILES[*]}"
+if [[ ${#ENV_ARGS[@]} -gt 0 ]]; then
+  echo "  env_args=${ENV_ARGS[*]}"
+fi
+
+if docker compose version >/dev/null 2>&1; then
+  sudo -E docker compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
+else
+  sudo -E docker-compose -p "${COMPOSE_PROJECT_NAME}" "${COMPOSE_FILES[@]}" "${ENV_ARGS[@]}" up -d
+fi
+
+echo "Remote deploy complete"
+trap 'rm -rf "$WORK_DIR"' EXIT
