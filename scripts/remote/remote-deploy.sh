@@ -29,6 +29,7 @@ REMOTE_ENV_NAME="${REMOTE_ENV_NAME:-env.env}"
 # Local paths
 WORK_DIR="/tmp/${APP_NAME}-${SHA}"
 mkdir -p "${WORK_DIR}"
+trap 'rm -rf "$WORK_DIR"' EXIT
 
 echo "Remote deploy starting"
 echo "  APP_NAME=${APP_NAME}"
@@ -181,4 +182,3 @@ else
 fi
 
 echo "Remote deploy complete"
-trap 'rm -rf "$WORK_DIR"' EXIT
