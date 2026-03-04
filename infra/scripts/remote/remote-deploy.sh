@@ -45,7 +45,7 @@ download_if_exists() {
 
   if aws s3 ls "${S3_URI}/${remote_name}" --region "${AWS_REGION}" >/dev/null 2>&1; then
     echo "Downloading ${remote_name} -> ${local_path}"
-    aws s3 cp "${S3_URI}/${remote_name}" "${local_path}" --region "${AWS_REGION}"
+    aws s3 cp "${S3_URI}/${remote_name}" "${local_path}" --region "${AWS_REGION}" --only-show-errors
     echo "Downloaded rc=$? size=$(wc -c < "${local_path}" 2>/dev/null || echo '?')"
     return 0
   fi
