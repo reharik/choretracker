@@ -44,8 +44,9 @@ download_if_exists() {
   local local_path="$2"
 
   if aws s3 ls "${S3_URI}/${remote_name}" --region "${AWS_REGION}" >/dev/null 2>&1; then
-    echo "Downloading ${remote_name}"
+    echo "Downloading ${remote_name} -> ${local_path}"
     aws s3 cp "${S3_URI}/${remote_name}" "${local_path}" --region "${AWS_REGION}"
+    echo "Downloaded rc=$? size=$(wc -c < "${local_path}" 2>/dev/null || echo '?')"
     return 0
   fi
   return 1
@@ -137,7 +138,8 @@ fi
 # Backend: load docker image from tar.gz (if present)
 # ------------------------------------------------------------------------------
 if [[ "${DEPLOY_BACKEND}" == "true" ]]; then
-  if download_if_exists "${BACKEND_TAR}" "${WORK_DIR}/${BACKEND_TAR}"; then
+ echo "DEBUG before backend block: DEPLOY_BACKEND='${DEPLOY_BACKEND:-}' WORK_DIR='${WORK_DIR:-}' BACKEND_TAR='${BACKEND_TAR:-}'"
+ if download_if_exists "${BACKEND_TAR}" "${WORK_DIR}/${BACKEND_TAR}"; then
     # echo "Loading backend image from ${BACKEND_TAR}"
     # gunzip -c "${WORK_DIR}/${BACKEND_TAR}" | sudo docker load
     echo "Loading backend image from ${BACKEND_TAR}"
@@ -175,9 +177,6 @@ fi
 echo "docker compose up"
 echo "  project=${COMPOSE_PROJECT_NAME}"
 echo "  files=${COMPOSE_FILES[*]}"
-echo "========================"
-echo "  app_name=${APP_NAME}"
-echo "========================"
 if [[ ${#ENV_ARGS[@]} -gt 0 ]]; then
   echo "  env_args=${ENV_ARGS[*]}"
 fi
