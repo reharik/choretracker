@@ -69,6 +69,43 @@ function getWeekLabel(weekKey: string): string {
   return `${fmt(mon)} – ${fmt(sun)}`;
 }
 
+function buildReceiptText(
+  summary: ChoreWeeklySummary,
+  weekKey: string,
+): string {
+  const weekLabel = getWeekLabel(weekKey);
+  const lines: string[] = [
+    "CHORE TRACKER – PAYMENT RECEIPT",
+    `Week of ${weekLabel}`,
+    "",
+    "Chores:",
+    ...summary.chores.map(
+      (c: ChoreWithStats) =>
+        `  ${c.name} (${c.completions}/${c.timesPerWeek})  $${c.earned.toFixed(2)}`,
+    ),
+    "",
+  ];
+  if (summary.extras.length > 0) {
+    lines.push("Extra chores:");
+    summary.extras.forEach((ex: ExtraWithStats) => {
+      lines.push(`  ${ex.name} (${ex.completions}x)  $${ex.earned.toFixed(2)}`);
+    });
+    lines.push("");
+  }
+  lines.push(`  Base chores  $${summary.baseEarned.toFixed(2)}`);
+  if (summary.bonusActive) {
+    lines.push(
+      `  100% Bonus (+25%)  $${summary.bonusAmount.toFixed(2)}`,
+    );
+  }
+  if (summary.extrasEarned > 0) {
+    lines.push(`  Extra chores  $${summary.extrasEarned.toFixed(2)}`);
+  }
+  lines.push("  ─────────────────────");
+  lines.push(`  TOTAL  $${summary.grandTotal.toFixed(2)}`);
+  return lines.join("\n");
+}
+
 function addWeeks(weekKey: string, weeks: number): string {
   // Parse weekKey (e.g., "2026-W07")
   const [year, weekStr] = weekKey.split("-W");
@@ -361,6 +398,7 @@ export const Chores = () => {
     timesPerWeek: string;
   }>({ name: "", baseValue: "", timesPerWeek: "" });
   const [isPaid, setIsPaid] = useState(false);
+  const [receiptCopied, setReceiptCopied] = useState(false);
 
   const isAdult = user?.role === "adult";
   const isCurrentWeek = weekKey === getCurrentWeekKey();
@@ -487,6 +525,26 @@ export const Chores = () => {
     if (result.success) {
       setIsPaid(true);
       await loadSummary();
+    }
+  };
+
+  const handleCopyReceipt = async () => {
+    if (!summary) return;
+    const text = buildReceiptText(summary, weekKey);
+    try {
+      await navigator.clipboard.writeText(text);
+      setReceiptCopied(true);
+      window.setTimeout(() => setReceiptCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers or non-HTTPS
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setReceiptCopied(true);
+      window.setTimeout(() => setReceiptCopied(false), 2000);
     }
   };
 
@@ -712,22 +770,32 @@ export const Chores = () => {
               >
                 💵 PAYDAY BREAKDOWN
               </h3>
-              {isAdult && isCurrentWeek && !isPaid && (
-                <Button size="sm" onClick={handleMarkAsPaid}>
-                  ✓ Mark as Paid
-                </Button>
-              )}
-              {isPaid && (
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#22c55e",
-                    fontWeight: 600,
-                  }}
+              <HStack gap={0.5} style={{ alignItems: "center" }}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCopyReceipt}
+                  title="Copy receipt for payment notes"
                 >
-                  ✓ PAID
-                </span>
-              )}
+                  {receiptCopied ? "✓ Copied!" : "📋 Receipt"}
+                </Button>
+                {isAdult && isCurrentWeek && !isPaid && (
+                  <Button size="sm" onClick={handleMarkAsPaid}>
+                    ✓ Mark as Paid
+                  </Button>
+                )}
+                {isPaid && (
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#22c55e",
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✓ PAID
+                  </span>
+                )}
+              </HStack>
             </HStack>
             {summary.chores.map((c: ChoreWithStats) => (
               <PaydayRow key={c.id}>
