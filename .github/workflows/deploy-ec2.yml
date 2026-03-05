@@ -10,6 +10,15 @@ on:
         type: boolean
         required: false
         default: true
+      # Caller: when triggering on push, pass base_sha and head_sha so we detect backend/frontend changes. Example: base_sha: ${{ github.event.before }}, head_sha: ${{ github.sha }}
+      base_sha:
+        type: string
+        required: false
+        default: ''
+      head_sha:
+        type: string
+        required: false
+        default: ''
     secrets:
       AWS_ROLE_ARN:
         required: true
@@ -34,61 +43,115 @@ jobs:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      backend_changed: ${{ steps.manual.outputs.backend_changed || steps.prev_run.outputs.deploy_both || steps.filter.outputs.backend_changed }}
-      frontend_changed: ${{ steps.manual.outputs.frontend_changed || steps.prev_run.outputs.deploy_both || steps.filter.outputs.frontend_changed }}
+      backend_changed: ${{ steps.decide.outputs.backend_changed }}
+      frontend_changed: ${{ steps.decide.outputs.frontend_changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Full history needed so path filter can diff base..ref (e.g. when caller passes base_sha)
+          fetch-depth: 0
+
       - name: Load infra app config
         shell: bash
         run: ./infra/scripts/deploy/load-infra-app-config.sh >> "$GITHUB_ENV"
-      - name: Set changes (manual run)
-        if: github.event_name == 'workflow_dispatch'
-        id: manual
-        run: |
-          echo "backend_changed=${{ github.event.inputs.deploy_backend }}" >> "$GITHUB_OUTPUT"
-          echo "frontend_changed=${{ github.event.inputs.deploy_frontend }}" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy both if previous run failed (push)
-        if: github.event_name == 'push'
-        id: prev_run
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          PREV_CONCLUSION=$(gh run list \
-            --workflow="${{ github.workflow }}.yml" \
-            --branch="${{ github.ref_name }}" \
-            --limit=10 \
-            --json databaseId,conclusion | \
-            jq -r --arg rid "${{ github.run_id }}" 'map(select((.databaseId | tostring) != $rid)) | .[0].conclusion // empty')
-          if [ "$PREV_CONCLUSION" = "failure" ] || [ "$PREV_CONCLUSION" = "cancelled" ]; then
-            echo "Previous run was $PREV_CONCLUSION; will deploy both backend and frontend."
-            echo "deploy_both=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy_both=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set changes (push – path filter)
-        if: github.event_name == 'push'
+      # 1) Path-based change detection (push, or workflow_call when caller passes base_sha)
+      - name: Path filter
+        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.base_sha != '')
         id: filter
         uses: dorny/paths-filter@v3
         with:
+          base: ${{ github.event_name == 'push' && github.event.before || inputs.base_sha }}
+          ref: ${{ github.event_name == 'push' && github.sha || (inputs.head_sha || github.sha) }}
           filters: |
-            backend_changed:
-            - 'apps/api/**'
-            - 'infra/docker/**'
-            - 'infra/config/docker-compose/**'
-            - 'infra/**'
-            frontend_changed:
+            backend:
+              - 'apps/api/**'
+              - 'infra/docker/**'
+              - 'infra/config/docker-compose/**'
+              - 'infra/scripts/remote/**'
+              - 'infra/scripts/deploy/**'
+              - 'apps/api/Dockerfile'
+            frontend:
               - 'apps/web/**'
+              - 'infra/scripts/remote/**'
+              - 'infra/scripts/deploy/**'
+              - 'apps/web/Dockerfile'
               - 'Caddyfile'
-              - 'docker-compose*.yml'
+            shared_force_both:
+              - '.github/workflows/deploy-ec2.yml'
+              - '.github/workflows/**'
               - 'infra/**'
-          base: ${{ github.event.before }}
-          ref: ${{ github.sha }}
 
+      # 2) Previous-run failure forcing (when we're doing path-based detection)
+      - name: Force both if previous run failed
+        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.base_sha != '')
+        id: prev_backend
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prev="$(gh run list \
+            --workflow "${{ github.workflow }}" \
+            --branch "${{ github.ref_name }}" \
+            --limit 10 \
+            --json databaseId,conclusion \
+            | jq -r --arg rid "${{ github.run_id }}" '
+                map(select((.databaseId|tostring) != $rid)) | .[0].conclusion // ""
+              ')"
+          # If you truly want per-job (FE vs BE), you'll need a different approach (see note below).
+          if [[ "$prev" == "failure" || "$prev" == "cancelled" ]]; then
+            echo "force=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "force=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 3) Manual overrides (workflow_dispatch)
+      - name: Manual inputs (dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: manual
+        run: |
+          echo "backend=${{ github.event.inputs.deploy_backend }}" >> "$GITHUB_OUTPUT"
+          echo "frontend=${{ github.event.inputs.deploy_frontend }}" >> "$GITHUB_OUTPUT"
+
+      # 4) Final decision
+      - name: Decide
+        id: decide
+        shell: bash
+        run: |
+          backend=false
+          frontend=false
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            backend='${{ steps.manual.outputs.backend }}'
+            frontend='${{ steps.manual.outputs.frontend }}'
+          elif [[ "${{ github.event_name }}" == "workflow_call" && "${{ steps.filter.outputs.backend }}" == "" ]]; then
+            # Called without base_sha: use caller's inputs (default both true)
+            backend='${{ inputs.deploy_backend }}'
+            frontend='${{ inputs.deploy_frontend }}'
+          else
+            shared='${{ steps.filter.outputs.shared_force_both || 'false' }}'
+            be_changed='${{ steps.filter.outputs.backend || 'false' }}'
+            fe_changed='${{ steps.filter.outputs.frontend || 'false' }}'
+            force_all='${{ steps.prev_backend.outputs.force || 'false' }}'
+
+            # shared infra/workflow change => force both
+            if [[ "$shared" == "true" ]]; then
+              backend=true
+              frontend=true
+            else
+              backend="$be_changed"
+              frontend="$fe_changed"
+
+              if [[ "$force_all" == "true" ]]; then
+                backend=true
+                frontend=true
+              fi
+            fi
+          fi
+
+          echo "backend_changed=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend_changed=$frontend" >> "$GITHUB_OUTPUT"
+          echo "Decision: backend=$backend frontend=$frontend"
   deploy-backend:
     name: Deploy backend
     runs-on: ubuntu-latest
