@@ -88,7 +88,7 @@ export const setupConfig = (): Config => {
       .map((o) => o.trim())
       .filter(Boolean),
     // Server configuration
-    serverPort: Number(process.env.PORT || 3000),
+    serverPort: Number(process.env.API_PORT || 3001),
     // Logging configuration
     logLevel:
       (process.env.LOG_LEVEL as

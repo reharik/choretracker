@@ -13,12 +13,15 @@ services:
         NX_PROJECT: "api"
         DEV_WORKSPACE: "@app/api"
         NODE_ENTRYPOINT: "apps/api/dist/index.js"
+    ports:
+      - "3001:3001"
     env_file:
       - ./apps/api/.env
     # Override .env so container talks to db service on internal port (5432), not host-mapped 5433
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      API_PORT: "3001"
     volumes:
       - ./apps/api:/app/apps/api
       - /app/apps/api/node_modules

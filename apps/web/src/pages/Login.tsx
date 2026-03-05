@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useAuth } from "../contexts/AuthContext";
+import { config } from "../config";
 import { FormInput } from "../ui/FormInput";
 import { Button, Card, VStack } from "../ui/Primitives";
 
@@ -33,6 +34,18 @@ const ErrorBanner = styled.div`
   border-radius: ${({ theme }) => theme.radius.sm};
   color: ${({ theme }) => theme.colors.danger};
   font-size: 0.9rem;
+`;
+
+const EnvBanner = styled.div<{ $dev: boolean }>`
+  font-size: 0.75rem;
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ $dev }) =>
+    $dev ? "rgba(34, 197, 94, 0.12)" : "rgba(249, 115, 22, 0.12)"};
+  color: ${({ $dev }) => ($dev ? "#16a34a" : "#ea580c")};
+  border: 1px solid
+    ${({ $dev }) => ($dev ? "rgba(34, 197, 94, 0.3)" : "rgba(249, 115, 22, 0.3)")};
+  word-break: break-all;
 `;
 
 const SignupLink = styled.p`
@@ -243,7 +256,10 @@ export const Login = () => {
         <Card>
           <VStack gap={3}>
             <Title>ChoreTracker Login</Title>
-
+            <EnvBanner $dev={import.meta.env.DEV}>
+              {import.meta.env.DEV ? "Development" : "Production"} · API:{" "}
+              {config.apiBaseUrl}
+            </EnvBanner>
             <form onSubmit={handleLoginSubmit}>
               <VStack gap={3}>
                 {error && <ErrorBanner>{error}</ErrorBanner>}

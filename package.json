@@ -15,6 +15,7 @@
     "db:migrate": "docker compose -f docker-compose-dev.yml exec -T api npm run db:migrate:local --workspace=@app/api",
     "db:migrate:prod": "docker compose -f docker-compose.yml exec -T api npm run db:migrate:local --workspace=@app/api",
     "db:seed": "docker compose -f docker-compose-dev.yml exec -T api npm run db:seed:local --workspace=@app/api",
+    "seed:dev-admin": "npm run seed:dev-admin --workspace=@app/api",
     "db:seed:prod": "docker compose -f docker-compose.yml exec -T api npm run db:seed:local --workspace=@app/api",
     "dev:api": "nx run api:serve",
     "dev:web": "nx run web:serve",
