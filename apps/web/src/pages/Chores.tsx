@@ -4,7 +4,7 @@ import type {
   ChoreExtra,
   ChoreWeeklySummary,
 } from "@chore-tracker/contracts";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useAuth } from "../contexts/AuthContext";
 import { useChoreService } from "../hooks/useChoreService";
@@ -371,6 +371,25 @@ const LegendCard = styled(Card)`
   line-height: 1.8;
 `;
 
+const PrintDropdownWrap = styled.div`
+  position: relative;
+  display: inline-flex;
+`;
+
+const PrintMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: ${({ theme }) => theme.colors.panel};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.sm};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  min-width: 140px;
+  z-index: 10;
+`;
+
 // ── Component ──
 
 export const Chores = () => {
@@ -399,6 +418,8 @@ export const Chores = () => {
   }>({ name: "", baseValue: "", timesPerWeek: "" });
   const [isPaid, setIsPaid] = useState(false);
   const [receiptCopied, setReceiptCopied] = useState(false);
+  const [showPrintMenu, setShowPrintMenu] = useState(false);
+  const printDropdownRef = useRef<HTMLDivElement>(null);
 
   const isAdult = user?.role === "adult";
   const isCurrentWeek = weekKey === getCurrentWeekKey();
@@ -423,6 +444,20 @@ export const Chores = () => {
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
+
+  useEffect(() => {
+    if (!showPrintMenu) return;
+    const close = (e: MouseEvent) => {
+      if (
+        printDropdownRef.current &&
+        !printDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowPrintMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [showPrintMenu]);
 
   const handlePreviousWeek = () => {
     setWeekKey((prev) => addWeeks(prev, -1));
@@ -514,6 +549,23 @@ export const Chores = () => {
   };
 
   const handleMarkAsPaid = async () => {
+    if (
+      !window.confirm(
+        `Mark week ${getWeekLabel(weekKey)} as paid? This will create a snapshot and freeze the data for this week.`,
+      )
+    ) {
+      return;
+    }
+    const result = await choreService.createSnapshot(weekKey);
+    if (result.success) {
+      setIsPaid(true);
+      await loadSummary();
+    }
+  };
+
+  const handleMakePayment = async () => {
+    if (!summary) return;
+    await handleCopyReceipt();
     if (
       !window.confirm(
         `Mark week ${getWeekLabel(weekKey)} as paid? This will create a snapshot and freeze the data for this week.`,
@@ -674,7 +726,10 @@ export const Chores = () => {
 
     w.document.write(html);
     w.document.close();
-    setTimeout(() => w.print(), 400);
+    setTimeout(() => {
+      w.addEventListener("afterprint", () => w.close());
+      w.print();
+    }, 400);
   };
 
   if (loading) {
@@ -735,16 +790,42 @@ export const Chores = () => {
               <Button size="sm" onClick={() => setShowPayday(!showPayday)}>
                 💵 Payday
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handlePrint(false)}
-              >
-                🖨 Print Empty
-              </Button>
-              <Button size="sm" onClick={() => handlePrint(true)}>
-                🖨 Print Current
-              </Button>
+              <PrintDropdownWrap ref={printDropdownRef}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowPrintMenu((open) => !open)}
+                  title="Print grid"
+                >
+                  🖨 Print
+                </Button>
+                {showPrintMenu && (
+                  <PrintMenu>
+                    <VStack gap={0} style={{ alignItems: "stretch" }}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          handlePrint(true);
+                          setShowPrintMenu(false);
+                        }}
+                      >
+                        Current
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          handlePrint(false);
+                          setShowPrintMenu(false);
+                        }}
+                      >
+                        Empty
+                      </Button>
+                    </VStack>
+                  </PrintMenu>
+                )}
+              </PrintDropdownWrap>
             </>
           )}
           <Button variant="ghost" size="sm" onClick={logout}>
@@ -771,29 +852,31 @@ export const Chores = () => {
                 💵 PAYDAY BREAKDOWN
               </h3>
               <HStack gap={0.5} style={{ alignItems: "center" }}>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCopyReceipt}
-                  title="Copy receipt for payment notes"
-                >
-                  {receiptCopied ? "✓ Copied!" : "📋 Receipt"}
-                </Button>
                 {isAdult && isCurrentWeek && !isPaid && (
-                  <Button size="sm" onClick={handleMarkAsPaid}>
-                    ✓ Mark as Paid
+                  <Button size="sm" onClick={handleMakePayment}>
+                    💵 Make Payment
                   </Button>
                 )}
                 {isPaid && (
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "#22c55e",
-                      fontWeight: 600,
-                    }}
-                  >
-                    ✓ PAID
-                  </span>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleCopyReceipt}
+                      title="Copy receipt for payment notes"
+                    >
+                      {receiptCopied ? "✓ Copied!" : "📋 Receipt"}
+                    </Button>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "#22c55e",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ✓ PAID
+                    </span>
+                  </>
                 )}
               </HStack>
             </HStack>
