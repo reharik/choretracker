@@ -6,5 +6,6 @@ on:
 
 jobs:
   ci:
-    uses: reharik/cannibal-infra/.github/workflows/ci.yml@main
+    # Pinned to match this app's vendored infra/ subtree generation (aebc3fe); see deploy-ec2.yml
+    uses: reharik/cannibal-infra/.github/workflows/ci.yml@aebc3fe10bc791f375fe15164a41c198569579a1
     secrets: inherit
